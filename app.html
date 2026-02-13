@@ -2,33 +2,929 @@
 <html dir="rtl" lang="ar">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>تلرفيب - التطبيق</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        body { font-family: system-ui; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .welcome { background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; max-width: 400px; }
-        h1 { color: #667eea; }
-        button { background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-top: 20px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 0;
+            margin: 0;
+        }
+        #app {
+            width: 100%;
+            max-width: 500px;
+            height: 700px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        /* الشريط العلوي */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: #667eea;
+            color: white;
+        }
+        .app-name {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .menu-icon, .search-icon {
+            font-size: 24px;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        /* شريط البحث */
+        .search-bar {
+            padding: 10px 20px;
+            background: white;
+            border-bottom: 1px solid #eee;
+            display: none;
+        }
+        .search-bar.show {
+            display: block;
+        }
+        .search-bar input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            outline: none;
+        }
+        .search-results {
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: none;
+        }
+        .search-results.show {
+            display: block;
+        }
+        .search-result-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+        .search-result-item:hover {
+            background: #f5f5f5;
+        }
+        /* القائمة الجانبية */
+        .drawer {
+            position: absolute;
+            top: 0;
+            right: -280px;
+            width: 280px;
+            height: 100%;
+            background: white;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+            transition: right 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .drawer.open {
+            right: 0;
+        }
+        .drawer-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .drawer-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #667eea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            overflow: hidden;
+        }
+        .drawer-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .drawer-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 0;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .drawer-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+        .drawer-overlay.open {
+            display: block;
+        }
+        /* المحتوى الرئيسي */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            background: #f0f2f5;
+        }
+        /* قناة المطور (ثابتة) */
+        .channel-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .channel-card:hover {
+            transform: scale(1.02);
+        }
+        .channel-icon {
+            font-size: 30px;
+        }
+        .channel-text {
+            flex: 1;
+        }
+        .channel-title {
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .channel-sub {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+        /* قائمة المحادثات */
+        .chat-list {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .chat-list-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .chat-list-item:hover {
+            background: #f5f5f5;
+        }
+        .chat-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #667eea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        .chat-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .chat-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .chat-name {
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+        }
+        .chat-last-msg {
+            font-size: 14px;
+            color: #666;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .chat-time {
+            font-size: 12px;
+            color: #999;
+        }
+        /* غرف الدردشة */
+        .chat-room {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s;
+            transform: translateX(100%);
+        }
+        .chat-room.open {
+            transform: translateX(0);
+        }
+        .chat-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: #667eea;
+            color: white;
+        }
+        .back-btn {
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .chat-header-info {
+            flex: 1;
+        }
+        .chat-header-name {
+            font-weight: bold;
+        }
+        .chat-header-status {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        .admin-badge {
+            background: gold;
+            color: #333;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            margin-right: 8px;
+        }
+        .subscribe-btn {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .subscribe-btn.subscribed {
+            background: #27ae60;
+            color: white;
+        }
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: #f9f9f9;
+        }
+        .message {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            word-wrap: break-word;
+            align-self: flex-start;
+            background: #f0f0f0;
+            position: relative;
+        }
+        .message.sent {
+            align-self: flex-end;
+            background: #667eea;
+            color: white;
+        }
+        .message .sender-name {
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 4px;
+            color: #555;
+        }
+        .message.sent .sender-name {
+            color: #ddd;
+        }
+        .message-time {
+            font-size: 10px;
+            color: #999;
+            margin-top: 5px;
+            text-align: left;
+        }
+        .chat-input-area {
+            display: flex;
+            gap: 10px;
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #eee;
+        }
+        #messageInput {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            outline: none;
+        }
+        #sendBtn {
+            background: #667eea;
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+        }
+        .hidden {
+            display: none !important;
+        }
+        .error {
+            color: #e74c3c;
+            font-size: 13px;
+            margin: 5px 0;
+        }
+        .success {
+            color: #27ae60;
+        }
+        /* زر إنشاء مجموعة/قناة (عائم) */
+        .fab {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #667eea;
+            color: white;
+            font-size: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            cursor: pointer;
+            z-index: 50;
+            transition: transform 0.2s;
+        }
+        .fab:hover {
+            transform: scale(1.1);
+        }
+        /* نافذة إنشاء مجموعة/قناة */
+        .modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s;
+            transform: translateY(100%);
+        }
+        .modal.open {
+            transform: translateY(0);
+        }
+        .modal-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: #667eea;
+            color: white;
+        }
+        .modal-content {
+            padding: 20px;
+            flex: 1;
+        }
+        .modal-content input, .modal-content select {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .modal-content button {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 16px;
+        }
     </style>
 </head>
 <body>
-    <div class="welcome" id="welcome"></div>
+    <div id="app">
+        <!-- الشريط العلوي -->
+        <div class="top-bar">
+            <div class="menu-icon" onclick="UI.toggleDrawer()">☰</div>
+            <div class="app-name">تلرفيب</div>
+            <div class="search-icon" onclick="UI.toggleSearch()">🔍</div>
+        </div>
+
+        <!-- شريط البحث -->
+        <div id="searchBar" class="search-bar">
+            <input type="text" id="searchInput" placeholder="ابحث عن مستخدم، قناة، أو مجموعة..." onkeyup="Search.handle()">
+            <div id="searchResults" class="search-results"></div>
+        </div>
+
+        <!-- القائمة الجانبية (إعدادات بسيطة) -->
+        <div id="drawerOverlay" class="drawer-overlay" onclick="UI.closeDrawer()"></div>
+        <div id="drawer" class="drawer">
+            <div class="drawer-header">
+                <div id="drawerAvatar" class="drawer-avatar" onclick="UI.changePhoto()">👤</div>
+                <div>
+                    <div id="drawerFullName">الاسم</div>
+                    <div id="drawerUsername" style="color:#666;">@username</div>
+                </div>
+            </div>
+            <div class="drawer-menu-item" onclick="UI.editName()">✏️ تغيير الاسم</div>
+            <div class="drawer-menu-item" onclick="UI.editUsername()">🆔 تغيير اسم المستخدم</div>
+            <div class="drawer-menu-item" onclick="UI.toggleDarkMode()">🌙 الوضع الداكن</div>
+            <div class="drawer-menu-item" onclick="Auth.logout()">🚪 تسجيل خروج</div>
+        </div>
+
+        <!-- المحتوى الرئيسي -->
+        <div id="mainContent" class="main-content">
+            <!-- قناة المطور (ثابتة) -->
+            <div class="channel-card" onclick="Channel.open()">
+                <div class="channel-icon">📢</div>
+                <div class="channel-text">
+                    <div class="channel-title">المطور تطبيق</div>
+                    <div class="channel-sub">قناة التحديثات الرسمية</div>
+                </div>
+                <div style="background:rgba(255,255,255,0.2); padding:4px 12px; border-radius:20px;">700K+</div>
+            </div>
+
+            <!-- قائمة المحادثات (دردشات + قنوات + مجموعات) -->
+            <div id="chatListContainer" class="chat-list"></div>
+        </div>
+
+        <!-- زر الإضافة العائم -->
+        <div class="fab" onclick="UI.openCreateModal()">+</div>
+
+        <!-- نافذة إنشاء مجموعة/قناة -->
+        <div id="createModal" class="modal">
+            <div class="modal-header">
+                <div class="back-btn" onclick="UI.closeCreateModal()">←</div>
+                <div>إنشاء مجموعة أو قناة</div>
+            </div>
+            <div class="modal-content">
+                <input type="text" id="createName" placeholder="الاسم (مثل: أخبار التكنولوجيا)">
+                <input type="text" id="createUsername" placeholder="اسم المستخدم (مثل: @technews)">
+                <select id="createType">
+                    <option value="group">مجموعة (يمكن للجميع الكتابة)</option>
+                    <option value="channel">قناة (المالك فقط يكتب)</option>
+                </select>
+                <div id="createError" class="error"></div>
+                <button onclick="GroupsAndChannels.create()">إنشاء</button>
+            </div>
+        </div>
+
+        <!-- غرفة الدردشة الفردية/الجماعية/قناة -->
+        <div id="chatRoom" class="chat-room">
+            <div class="chat-header">
+                <div class="back-btn" onclick="Chat.close()">←</div>
+                <div id="chatAvatar" class="chat-avatar">👤</div>
+                <div class="chat-header-info">
+                    <div id="chatName">...</div>
+                    <div id="chatStatus"></div>
+                </div>
+                <div id="chatAdminControls" style="display:none;">
+                    <button onclick="Chat.banUser()" style="background:#e74c3c; border:none; color:white; padding:4px 8px; border-radius:4px;">حظر</button>
+                </div>
+            </div>
+            <div id="messagesContainer" class="messages-container"></div>
+            <div class="chat-input-area">
+                <input type="text" id="messageInput" placeholder="اكتب رسالة...">
+                <button id="sendBtn" onclick="Chat.sendMessage()">➤</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        const user = JSON.parse(localStorage.getItem('currentUser'));
-        if (!user) {
-            window.location.href = 'index.html';
-        } else {
-            document.getElementById('welcome').innerHTML = `
-                <h1>مرحباً ${user.fullName} 👋</h1>
-                <p>اسم المستخدم: @${user.username}</p>
-                <p>هذه هي الصفحة الرئيسية للتطبيق.</p>
-                <button onclick="logout()">تسجيل خروج</button>
-            `;
+        // -------------------- Firebase Config --------------------
+        const firebaseConfig = {
+            apiKey: "AIzaSyDRCtfuYrEdnuKUsWu_79N0",
+            authDomain: "tttrt-b8c5a.firebaseapp.com",
+            databaseURL: "https://tttrt-b8c5a-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "tttrt-b8c5a",
+            storageBucket: "tttrt-b8c5a.appspot.com",
+            messagingSenderId: "975123752593",
+            appId: "1:975123752593:web:e591e930af101968875560"
+        };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // -------------------- Current User --------------------
+        let currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (!currentUser) window.location.href = 'index.html';
+
+        // -------------------- كائن UI --------------------
+        const UI = {
+            toggleDrawer() {
+                document.getElementById('drawer').classList.toggle('open');
+                document.getElementById('drawerOverlay').classList.toggle('open');
+            },
+            closeDrawer() {
+                document.getElementById('drawer').classList.remove('open');
+                document.getElementById('drawerOverlay').classList.remove('open');
+            },
+            toggleSearch() {
+                const sb = document.getElementById('searchBar');
+                sb.classList.toggle('show');
+                if (sb.classList.contains('show')) document.getElementById('searchInput').focus();
+                else document.getElementById('searchResults').classList.remove('show');
+            },
+            openCreateModal() {
+                document.getElementById('createModal').classList.add('open');
+            },
+            closeCreateModal() {
+                document.getElementById('createModal').classList.remove('open');
+                document.getElementById('createName').value = '';
+                document.getElementById('createUsername').value = '';
+                document.getElementById('createError').innerText = '';
+            },
+            updateDrawerInfo() {
+                document.getElementById('drawerFullName').innerText = currentUser.fullName;
+                document.getElementById('drawerUsername').innerText = '@' + currentUser.username;
+            },
+            changePhoto() { alert('تغيير الصورة قيد التطوير'); },
+            editName() { 
+                const newName = prompt('الاسم الجديد:', currentUser.fullName);
+                if (newName && newName.trim()) {
+                    currentUser.fullName = newName.trim();
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    db.ref(`users/${currentUser.uid}/fullName`).set(newName.trim());
+                    this.updateDrawerInfo();
+                }
+                this.closeDrawer();
+            },
+            editUsername() { alert('تغيير اسم المستخدم قيد التطوير'); },
+            toggleDarkMode() { document.body.classList.toggle('dark-mode'); this.closeDrawer(); }
+        };
+
+        // -------------------- كائن Auth (تسجيل خروج) --------------------
+        const Auth = {
+            logout() {
+                localStorage.removeItem('currentUser');
+                window.location.href = 'index.html';
+            }
+        };
+
+        // -------------------- كائن Search (بحث شامل) --------------------
+        const Search = {
+            async handle() {
+                const query = document.getElementById('searchInput').value.trim();
+                const resultsDiv = document.getElementById('searchResults');
+                if (query.length < 2) {
+                    resultsDiv.classList.remove('show');
+                    return;
+                }
+                let html = '';
+
+                // 1. البحث عن المستخدمين
+                const usersSnap = await db.ref('users').once('value');
+                usersSnap.forEach(child => {
+                    const u = child.val();
+                    if (u.username && u.username.includes(query) && u.uid !== currentUser.uid) {
+                        html += `<div class="search-result-item" onclick="Chat.startPrivate('${u.uid}', '${u.username}', '${u.fullName}')">
+                            <div class="chat-avatar">${u.fullName.charAt(0)}</div>
+                            <div><strong>${u.fullName}</strong><br><span style="color:#666;">@${u.username}</span></div>
+                        </div>`;
+                    }
+                });
+
+                // 2. البحث عن القنوات والمجموعات
+                const groupsSnap = await db.ref('groups').once('value');
+                groupsSnap.forEach(child => {
+                    const g = child.val();
+                    if (g.name.includes(query) || (g.username && g.username.includes(query))) {
+                        const typeLabel = g.type === 'channel' ? '📢 قناة' : '👥 مجموعة';
+                        html += `<div class="search-result-item" onclick="GroupsAndChannels.open('${g.id}')">
+                            <div class="chat-avatar" style="border-radius: ${g.type==='channel'?'8px':'50%'};">${g.type==='channel'?'📢':'👥'}</div>
+                            <div><strong>${g.name}</strong><br><span style="color:#666;">@${g.username} • ${typeLabel} • ${g.memberCount||0} عضو</span></div>
+                        </div>`;
+                    }
+                });
+
+                resultsDiv.innerHTML = html || '<div style="padding:12px; color:#999;">لا توجد نتائج</div>';
+                resultsDiv.classList.add('show');
+            }
+        };
+
+        // -------------------- كائن GroupsAndChannels --------------------
+        const GroupsAndChannels = {
+            async create() {
+                const name = document.getElementById('createName').value.trim();
+                let username = document.getElementById('createUsername').value.trim().replace('@','');
+                const type = document.getElementById('createType').value;
+                const errorDiv = document.getElementById('createError');
+
+                if (!name || !username) {
+                    errorDiv.innerText = 'الرجاء إدخال الاسم واسم المستخدم';
+                    return;
+                }
+                if (!/^[A-Za-z][A-Za-z0-9_]{4,19}$/.test(username)) {
+                    errorDiv.innerText = 'اسم المستخدم: 5-20 حرف، يبدأ بحرف، إنجليزي وأرقام و_ فقط';
+                    return;
+                }
+
+                // التحقق من عدم تكرار اسم المستخدم
+                const check = await db.ref('usernames').child(username).once('value');
+                if (check.exists()) {
+                    errorDiv.innerText = 'اسم المستخدم مستخدم بالفعل';
+                    return;
+                }
+
+                const groupId = db.ref().push().key;
+                const groupData = {
+                    id: groupId,
+                    name,
+                    username,
+                    type,
+                    createdBy: currentUser.uid,
+                    createdAt: Date.now(),
+                    memberCount: 1,
+                    members: { [currentUser.uid]: { role: 'owner', joinedAt: Date.now() } }
+                };
+                await db.ref(`groups/${groupId}`).set(groupData);
+                await db.ref(`usernames/${username}`).set(groupId);
+                await db.ref(`groupMembers/${groupId}/${currentUser.uid}`).set({ role: 'owner', joinedAt: Date.now() });
+
+                UI.closeCreateModal();
+                this.open(groupId);
+            },
+
+            async open(groupId) {
+                const groupSnap = await db.ref(`groups/${groupId}`).once('value');
+                const group = groupSnap.val();
+                if (!group) return;
+                Chat.currentChat = { ...group, isGroup: true, id: groupId };
+                Chat.currentChatId = `group_${groupId}`;
+                Chat.currentChatType = group.type;
+                Chat.currentChatUser = null;
+                Chat.openChatUI(group.name, group.type === 'channel' ? '📢' : '👥', `${group.type==='channel'?'قناة':'مجموعة'} · ${group.memberCount} عضو`);
+
+                // التحقق إذا كان المالك
+                if (group.createdBy === currentUser.uid) {
+                    document.getElementById('chatAdminControls').style.display = 'block';
+                } else {
+                    document.getElementById('chatAdminControls').style.display = 'none';
+                }
+
+                Chat.loadGroupMessages(groupId);
+            },
+
+            async join(groupId) {
+                const memberRef = db.ref(`groupMembers/${groupId}/${currentUser.uid}`);
+                const snap = await memberRef.once('value');
+                if (!snap.exists()) {
+                    await memberRef.set({ role: 'member', joinedAt: Date.now() });
+                    await db.ref(`groups/${groupId}/memberCount`).transaction(x => (x||0)+1);
+                }
+                this.open(groupId);
+            }
+        };
+
+        // -------------------- كائن Chat --------------------
+        const Chat = {
+            currentChat: null,
+            currentChatId: null,
+            currentChatType: null, // 'private', 'group', 'channel'
+            currentChatUser: null,
+            messagesListener: null,
+
+            startPrivate(uid, username, fullName) {
+                this.currentChatType = 'private';
+                this.currentChatUser = { uid, username, fullName };
+                const ids = [currentUser.uid, uid].sort();
+                this.currentChatId = `private_${ids[0]}_${ids[1]}`;
+                this.openChatUI(fullName, fullName.charAt(0), '');
+                this.loadPrivateMessages(uid);
+            },
+
+            openChatUI(name, avatarChar, status) {
+                document.getElementById('chatName').innerText = name;
+                document.getElementById('chatAvatar').innerText = avatarChar;
+                document.getElementById('chatStatus').innerText = status;
+                document.getElementById('chatRoom').classList.add('open');
+            },
+
+            close() {
+                document.getElementById('chatRoom').classList.remove('open');
+                if (this.messagesListener) this.messagesListener.off();
+                this.messagesListener = null;
+                this.currentChat = null;
+                this.currentChatId = null;
+                this.currentChatUser = null;
+            },
+
+            loadPrivateMessages(otherUid) {
+                const messagesRef = db.ref(`messages/${this.currentChatId}`);
+                this.messagesListener = messagesRef.orderByChild('timestamp').on('value', (snap) => {
+                    this.displayMessages(snap);
+                });
+            },
+
+            loadGroupMessages(groupId) {
+                const messagesRef = db.ref(`groupMessages/${groupId}`);
+                this.messagesListener = messagesRef.orderByChild('timestamp').on('value', (snap) => {
+                    this.displayMessages(snap, true);
+                });
+            },
+
+            async displayMessages(snapshot, isGroup = false) {
+                const container = document.getElementById('messagesContainer');
+                container.innerHTML = '';
+                if (!snapshot.exists()) {
+                    container.innerHTML = '<div style="text-align:center;color:#999;padding:20px;">أرسل أول رسالة 👋</div>';
+                    return;
+                }
+                const messages = [];
+                snapshot.forEach(child => messages.push(child.val()));
+                messages.sort((a,b) => a.timestamp - b.timestamp);
+
+                for (let msg of messages) {
+                    const div = document.createElement('div');
+                    div.className = `message ${msg.senderId === currentUser.uid ? 'sent' : 'received'}`;
+                    let senderHtml = '';
+                    if (isGroup && msg.senderId !== currentUser.uid) {
+                        const userSnap = await db.ref(`users/${msg.senderId}`).once('value');
+                        const user = userSnap.val();
+                        senderHtml = `<div class="sender-name">${user?.fullName || 'مستخدم'}</div>`;
+                    }
+                    div.innerHTML = senderHtml + `<div>${msg.text}</div><div class="message-time">${new Date(msg.timestamp).toLocaleTimeString('ar', {hour:'2-digit',minute:'2-digit'})}</div>`;
+                    container.appendChild(div);
+                }
+                container.scrollTop = container.scrollHeight;
+            },
+
+            async sendMessage() {
+                const input = document.getElementById('messageInput');
+                const text = input.value.trim();
+                if (!text || !this.currentChatId) return;
+
+                if (this.currentChatType === 'private') {
+                    const msg = {
+                        messageId: db.ref().push().key,
+                        senderId: currentUser.uid,
+                        receiverId: this.currentChatUser.uid,
+                        text,
+                        timestamp: Date.now()
+                    };
+                    await db.ref(`messages/${this.currentChatId}/${msg.messageId}`).set(msg);
+                } else {
+                    // مجموعة أو قناة
+                    const groupId = this.currentChatId.replace('group_','');
+                    const msg = {
+                        messageId: db.ref().push().key,
+                        senderId: currentUser.uid,
+                        groupId,
+                        text,
+                        timestamp: Date.now()
+                    };
+                    await db.ref(`groupMessages/${groupId}/${msg.messageId}`).set(msg);
+                }
+                input.value = '';
+            },
+
+            banUser() {
+                alert('خاصية الحظر قيد التطوير');
+            }
+        };
+
+        // -------------------- كائن Channel (قناة المطور) --------------------
+        const Channel = {
+            open() {
+                alert('قناة المطور: سيتم فتحها قريباً');
+            }
+        };
+
+        // -------------------- تهيئة التطبيق --------------------
+        function init() {
+            UI.updateDrawerInfo();
+            loadChatList();
         }
-        function logout() {
-            localStorage.removeItem('currentUser');
-            window.location.href = 'index.html';
+
+        // تحميل قائمة المحادثات (آخر الرسائل)
+        async function loadChatList() {
+            const container = document.getElementById('chatListContainer');
+            const conversations = new Map();
+
+            // 1. المحادثات الخاصة
+            const msgsSnap = await db.ref('messages').once('value');
+            msgsSnap.forEach(chatSnap => {
+                const msgs = chatSnap.val();
+                Object.values(msgs).forEach(msg => {
+                    if (msg.senderId === currentUser.uid || msg.receiverId === currentUser.uid) {
+                        const otherId = msg.senderId === currentUser.uid ? msg.receiverId : msg.senderId;
+                        if (!conversations.has(otherId) || conversations.get(otherId).timestamp < msg.timestamp) {
+                            conversations.set(otherId, { id: otherId, type: 'user', lastMessage: msg.text, timestamp: msg.timestamp });
+                        }
+                    }
+                });
+            });
+
+            // 2. المجموعات التي هو عضو فيها
+            const memberSnap = await db.ref('groupMembers').orderByChild('uid').equalTo(currentUser.uid).once('value');
+            memberSnap.forEach(member => {
+                const groupId = member.key;
+                // نأخذ آخر رسالة من المجموعة
+                db.ref(`groupMessages/${groupId}`).orderByChild('timestamp').limitToLast(1).once('value', snap => {
+                    let lastMsg = 'أنشئت حديثاً', lastTime = Date.now();
+                    snap.forEach(m => { lastMsg = m.val().text; lastTime = m.val().timestamp; });
+                    conversations.set(`group_${groupId}`, { id: groupId, type: 'group', lastMessage: lastMsg, timestamp: lastTime });
+                    renderChatList(Array.from(conversations.values()));
+                });
+            });
+
+            renderChatList(Array.from(conversations.values()));
         }
+
+        async function renderChatList(list) {
+            const container = document.getElementById('chatListContainer');
+            container.innerHTML = '';
+            list.sort((a,b) => b.timestamp - a.timestamp);
+
+            for (let item of list) {
+                const div = document.createElement('div');
+                div.className = 'chat-list-item';
+
+                if (item.type === 'user') {
+                    const userSnap = await db.ref('users').orderByChild('uid').equalTo(item.id).once('value');
+                    if (!userSnap.exists()) continue;
+                    let user;
+                    userSnap.forEach(u => user = u.val());
+                    div.innerHTML = `<div class="chat-avatar">${user.fullName.charAt(0)}</div>
+                        <div class="chat-info">
+                            <div class="chat-name"><span>${user.fullName}</span><span class="chat-time">${new Date(item.timestamp).toLocaleTimeString('ar',{hour:'2-digit',minute:'2-digit'})}</span></div>
+                            <div class="chat-last-msg">${item.lastMessage}</div>
+                        </div>`;
+                    div.onclick = () => Chat.startPrivate(user.uid, user.username, user.fullName);
+                } else {
+                    const groupSnap = await db.ref(`groups/${item.id}`).once('value');
+                    const group = groupSnap.val();
+                    if (!group) continue;
+                    div.innerHTML = `<div class="chat-avatar" style="border-radius:${group.type==='channel'?'8px':'50%'};">${group.type==='channel'?'📢':'👥'}</div>
+                        <div class="chat-info">
+                            <div class="chat-name"><span>${group.name}</span><span class="chat-time">${new Date(item.timestamp).toLocaleTimeString('ar',{hour:'2-digit',minute:'2-digit'})}</span></div>
+                            <div class="chat-last-msg">${item.lastMessage}</div>
+                        </div>`;
+                    div.onclick = () => GroupsAndChannels.open(group.id);
+                }
+                container.appendChild(div);
+            }
+            if (list.length === 0) container.innerHTML = '<div style="text-align:center;padding:30px;color:#999;">لا توجد محادثات بعد</div>';
+        }
+
+        init();
     </script>
 </body>
 </html>
