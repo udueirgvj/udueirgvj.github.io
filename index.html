@@ -4,123 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>تلرفيب - تسجيل الدخول</title>
-    <!-- Firebase SDK -->
+    <!-- Firebase SDK (مشروعك القديم) -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 0;
-            margin: 0;
-        }
-        #app {
-            width: 100%;
-            max-width: 500px;
-            height: 700px;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-        .auth-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            z-index: 200;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        .auth-box {
-            width: 100%;
-            max-width: 350px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-        }
-        .auth-box h2 {
-            color: #333;
-            text-align: center;
-            margin-bottom: 25px;
-            font-size: 24px;
-        }
-        .auth-box input {
-            width: 100%;
-            padding: 12px 15px;
-            margin: 8px 0;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            font-size: 15px;
-            transition: 0.2s;
-        }
-        .auth-box input:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
-            outline: none;
-        }
-        .auth-box button {
-            width: 100%;
-            padding: 12px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 15px;
-            transition: 0.2s;
-        }
-        .auth-box button:hover {
-            background: #5a67d8;
-            transform: translateY(-2px);
-        }
-        .link-btn {
-            background: transparent !important;
-            color: #667eea !important;
-            border: 1px solid #667eea !important;
-            margin-top: 10px;
-        }
-        .link-btn:hover {
-            background: #f0f3ff !important;
-            color: #5a67d8 !important;
-            transform: none !important;
-        }
-        .hidden {
-            display: none !important;
-        }
-        .error {
-            color: #e74c3c;
-            font-size: 13px;
-            margin: 5px 0;
-            text-align: right;
-        }
-        .success {
-            color: #27ae60;
-            font-size: 13px;
-            margin: 5px 0;
-        }
+        /* التنسيقات الأساسية */
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',sans-serif; }
+        body { background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); display:flex; justify-content:center; align-items:center; min-height:100vh; }
+        #app { width:100%; max-width:500px; height:700px; background:white; border-radius:20px; box-shadow:0 10px 40px rgba(0,0,0,0.2); position:relative; overflow:hidden; display:flex; flex-direction:column; }
+        .auth-container { position:absolute; top:0; left:0; width:100%; height:100%; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); display:flex; justify-content:center; align-items:center; padding:20px; }
+        .auth-box { width:100%; max-width:350px; background:rgba(255,255,255,0.95); backdrop-filter:blur(10px); padding:30px; border-radius:20px; box-shadow:0 15px 35px rgba(0,0,0,0.2); }
+        .auth-box h2 { color:#333; text-align:center; margin-bottom:25px; font-size:24px; }
+        .auth-box input { width:100%; padding:12px 15px; margin:8px 0; border:1px solid #ddd; border-radius:10px; font-size:15px; }
+        .auth-box input:focus { border-color:#667eea; outline:none; box-shadow:0 0 0 3px rgba(102,126,234,0.1); }
+        .auth-box button { width:100%; padding:12px; background:#667eea; color:white; border:none; border-radius:10px; font-size:16px; font-weight:bold; cursor:pointer; margin-top:15px; }
+        .auth-box button:hover { background:#5a67d8; transform:translateY(-2px); }
+        .link-btn { background:transparent !important; color:#667eea !important; border:1px solid #667eea !important; margin-top:10px; }
+        .link-btn:hover { background:#f0f3ff !important; transform:none !important; }
+        .hidden { display:none !important; }
+        .error { color:#e74c3c; font-size:13px; margin:5px 0; text-align:right; }
+        .success { color:#27ae60; font-size:13px; margin:5px 0; }
     </style>
 </head>
 <body>
@@ -128,9 +31,9 @@
         <div id="authContainer" class="auth-container">
             <!-- تسجيل الدخول -->
             <div id="loginContainer" class="auth-box">
-                <div style="text-align: center; margin-bottom: 25px;">
-                    <h1 style="color: #667eea; font-size: 40px; margin-bottom: 5px;">تلرفيب</h1>
-                    <p style="color: #666;">مرحباً بكم في تلرفيب</p>
+                <div style="text-align:center; margin-bottom:25px;">
+                    <h1 style="color:#667eea; font-size:40px; margin-bottom:5px;">تلرفيب</h1>
+                    <p style="color:#666;">مرحباً بكم في تلرفيب</p>
                 </div>
                 <input type="text" id="loginUsername" placeholder="اسم المستخدم">
                 <input type="password" id="loginPassword" placeholder="كلمة المرور">
@@ -143,24 +46,14 @@
             <div id="signupContainer" class="auth-box hidden">
                 <h2>📝 إنشاء حساب</h2>
                 <input type="text" id="signupFullname" placeholder="الاسم الشخصي">
-                <input type="text" id="signupUsername" placeholder="اسم المستخدم (5-10 أحرف إنجليزية)">
-                <input type="email" id="signupEmail" placeholder="البريد الإلكتروني" dir="ltr">
+                <input type="text" id="signupUsername" placeholder="اسم المستخدم (5 أحرف إنجليزية على الأقل)">
+                <input type="email" id="signupEmail" placeholder="البريد الإلكتروني (اختياري)">
                 <input type="password" id="signupPassword" placeholder="كلمة المرور">
                 <input type="password" id="signupConfirm" placeholder="تأكيد كلمة المرور">
                 <div id="signupError" class="error"></div>
                 <div id="signupSuccess" class="success"></div>
                 <button onclick="handleSignUp()">تسجيل</button>
                 <button class="link-btn" onclick="showLogin()">لديك حساب؟ سجل دخولك</button>
-            </div>
-
-            <!-- تحقق البريد -->
-            <div id="verificationContainer" class="auth-box hidden">
-                <div style="text-align: center;">
-                    <h2 style="color: #27ae60; margin-bottom: 20px;">📧 تحقق من بريدك</h2>
-                    <p style="margin: 20px 0; color: #555;">تم إرسال رابط التفعيل إلى بريدك الإلكتروني. يرجى تفعيل حسابك ثم تسجيل الدخول.</p>
-                    <button onclick="resendVerificationEmail()">إعادة إرسال</button>
-                    <button class="link-btn" onclick="showLogin()">تسجيل الدخول</button>
-                </div>
             </div>
         </div>
     </div>
@@ -174,45 +67,27 @@
             projectId: "tttrt-b8c5a",
             storageBucket: "tttrt-b8c5a.appspot.com",
             messagingSenderId: "975123752593",
-            appId: "1:975123752593:web:e591e930af101968875560",
-            measurementId: "G-VJVEB51FEW"
+            appId: "1:975123752593:web:e591e930af101968875560"
         };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        const auth = firebase.auth();
 
-        // -------------------- متغيرات ودوال عامة --------------------
-        let currentUser = null;
-
-        // التحقق من صحة اسم المستخدم
-        function isValidUsername(username) {
-            return /^[A-Za-z][A-Za-z0-9_]{4,9}$/.test(username);
-        }
-
-        // التحقق من توفر اسم المستخدم
-        async function isUsernameAvailable(username) {
-            const snap = await db.ref('usernames').child(username).once('value');
-            return !snap.exists();
-        }
-
-        // دوال عرض الشاشات
+        // -------------------- دوال العرض --------------------
         function showLogin() {
             document.getElementById('loginContainer').classList.remove('hidden');
             document.getElementById('signupContainer').classList.add('hidden');
-            document.getElementById('verificationContainer').classList.add('hidden');
         }
         function showSignup() {
             document.getElementById('loginContainer').classList.add('hidden');
             document.getElementById('signupContainer').classList.remove('hidden');
-            document.getElementById('verificationContainer').classList.add('hidden');
-        }
-        function showVerification() {
-            document.getElementById('loginContainer').classList.add('hidden');
-            document.getElementById('signupContainer').classList.add('hidden');
-            document.getElementById('verificationContainer').classList.remove('hidden');
         }
 
-        // إنشاء حساب
+        // التحقق من اسم المستخدم (إنجليزي وأرقام فقط، 5 أحرف على الأقل)
+        function isValidUsername(username) {
+            return /^[A-Za-z0-9_]{5,}$/.test(username);
+        }
+
+        // إنشاء حساب جديد (بدون Firebase Authentication)
         async function handleSignUp() {
             const fullName = document.getElementById('signupFullname').value.trim();
             const username = document.getElementById('signupUsername').value.trim();
@@ -220,15 +95,17 @@
             const password = document.getElementById('signupPassword').value.trim();
             const confirm = document.getElementById('signupConfirm').value.trim();
 
+            // تفريغ الأخطاء
             document.getElementById('signupError').innerText = '';
             document.getElementById('signupSuccess').innerText = '';
 
-            if (!fullName || !username || !email || !password || !confirm) {
+            // التحقق من الحقول
+            if (!fullName || !username || !password || !confirm) {
                 document.getElementById('signupError').innerText = 'جميع الحقول مطلوبة';
                 return;
             }
             if (!isValidUsername(username)) {
-                document.getElementById('signupError').innerText = 'اسم المستخدم: 5-10 أحرف إنجليزية، يبدأ بحرف';
+                document.getElementById('signupError').innerText = 'اسم المستخدم: 5 أحرف إنجليزية أو أرقام على الأقل';
                 return;
             }
             if (password.length < 6) {
@@ -241,51 +118,43 @@
             }
 
             try {
-                // التحقق من توفر اسم المستخدم
-                const available = await isUsernameAvailable(username);
-                if (!available) {
-                    document.getElementById('signupError').innerText = 'اسم المستخدم غير متاح';
+                // التحقق من عدم تكرار اسم المستخدم
+                const snapshot = await db.ref('users').orderByChild('username').equalTo(username).once('value');
+                if (snapshot.exists()) {
+                    document.getElementById('signupError').innerText = 'اسم المستخدم موجود بالفعل';
                     return;
                 }
 
-                // إنشاء المستخدم في Firebase Authentication
-                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-                const user = userCredential.user;
-
-                // إرسال بريد التحقق
-                await user.sendEmailVerification();
-
-                // حفظ بيانات المستخدم في Realtime Database
+                // إنشاء معرف فريد
+                const newUserRef = db.ref('users').push();
+                const uid = newUserRef.key;
                 const userData = {
-                    uid: user.uid,
-                    fullName,
-                    username,
-                    email,
+                    uid: uid,
+                    fullName: fullName,
+                    username: username,
+                    email: email,
+                    password: password,  // نص عادي (يمكنك تشفيره لاحقاً)
                     photoURL: '',
                     bio: '',
-                    emailVerified: false,
-                    subscribedChannel: false,
                     createdAt: new Date().toISOString(),
                     lastLogin: new Date().toISOString()
                 };
-                await db.ref(`users/${user.uid}`).set(userData);
-                await db.ref(`usernames/${username}`).set(user.uid);
 
-                // تسجيل الخروج فوراً (لأن البريد غير مفعل)
-                await auth.signOut();
+                await newUserRef.set(userData);
+                // حفظ اسم المستخدم لضمان الفريدة
+                await db.ref(`usernames/${username}`).set(uid);
 
-                // عرض شاشة التحقق
-                document.getElementById('signupSuccess').innerText = 'تم إنشاء الحساب. الرجاء تفعيل بريدك الإلكتروني.';
+                // حفظ بيانات المستخدم في localStorage
+                localStorage.setItem('currentUser', JSON.stringify(userData));
+
+                // إظهار رسالة نجاح ثم التوجيه إلى التطبيق
+                document.getElementById('signupSuccess').innerText = 'تم إنشاء الحساب! جاري تحويلك...';
                 setTimeout(() => {
-                    showVerification();
-                }, 2000);
+                    window.location.href = 'app.html';
+                }, 1500);
             } catch (error) {
                 console.error(error);
-                if (error.code === 'auth/email-already-in-use') {
-                    document.getElementById('signupError').innerText = 'البريد الإلكتروني مستخدم بالفعل';
-                } else {
-                    document.getElementById('signupError').innerText = error.message;
-                }
+                document.getElementById('signupError').innerText = 'حدث خطأ، حاول مرة أخرى';
             }
         }
 
@@ -296,8 +165,12 @@
             const errorDiv = document.getElementById('loginError');
             errorDiv.innerText = '';
 
+            if (!username || !password) {
+                errorDiv.innerText = 'أدخل اسم المستخدم وكلمة المرور';
+                return;
+            }
+
             try {
-                // البحث عن المستخدم بواسطة اسم المستخدم
                 const snapshot = await db.ref('users').orderByChild('username').equalTo(username).once('value');
                 if (!snapshot.exists()) {
                     errorDiv.innerText = 'المستخدم غير موجود';
@@ -307,78 +180,30 @@
                 let userData;
                 snapshot.forEach(child => userData = child.val());
 
-                // تسجيل الدخول باستخدام البريد الإلكتروني
-                const userCredential = await auth.signInWithEmailAndPassword(userData.email, password);
-                const user = userCredential.user;
-
-                // التحقق من تفعيل البريد
-                if (!user.emailVerified) {
-                    await auth.signOut();
-                    errorDiv.innerText = 'الرجاء تفعيل بريدك الإلكتروني أولاً';
+                if (userData.password !== password) {
+                    errorDiv.innerText = 'كلمة المرور غير صحيحة';
                     return;
                 }
 
                 // تحديث آخر دخول
-                await db.ref(`users/${user.uid}/lastLogin`).set(new Date().toISOString());
-                await db.ref(`users/${user.uid}/emailVerified`).set(true);
+                await db.ref(`users/${userData.uid}/lastLogin`).set(new Date().toISOString());
 
-                // حفظ بيانات المستخدم في localStorage
-                const updatedUser = { ...userData, emailVerified: true };
-                localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+                // حفظ في localStorage
+                localStorage.setItem('currentUser', JSON.stringify(userData));
 
-                // التوجيه إلى صفحة التطبيق
+                // التوجيه إلى التطبيق
                 window.location.href = 'app.html';
             } catch (error) {
                 console.error(error);
-                if (error.code === 'auth/wrong-password') {
-                    errorDiv.innerText = 'كلمة المرور غير صحيحة';
-                } else {
-                    errorDiv.innerText = error.message;
-                }
+                errorDiv.innerText = 'خطأ في تسجيل الدخول';
             }
         }
 
-        // إعادة إرسال رابط التفعيل
-        async function resendVerificationEmail() {
-            try {
-                if (auth.currentUser) {
-                    await auth.currentUser.sendEmailVerification();
-                    alert('تم إعادة إرسال رابط التفعيل');
-                } else {
-                    alert('لا يوجد مستخدم مسجل حالياً');
-                }
-            } catch (error) {
-                alert(error.message);
-            }
-        }
-
-        // التحقق من وجود مستخدم مسجل دخول بالفعل عند تحميل الصفحة
-        auth.onAuthStateChanged(async (user) => {
-            if (user && user.emailVerified) {
-                // إذا كان المستخدم مسجل دخوله وبريده مفعل، ننقله إلى التطبيق مباشرة
-                const saved = localStorage.getItem('currentUser');
-                if (saved) {
-                    window.location.href = 'app.html';
-                } else {
-                    // إذا لم يكن في localStorage، نجلب البيانات من قاعدة البيانات
-                    const snap = await db.ref(`users/${user.uid}`).once('value');
-                    const userData = snap.val();
-                    localStorage.setItem('currentUser', JSON.stringify(userData));
-                    window.location.href = 'app.html';
-                }
-            }
-        });
-
-        // استعادة الجلسة من localStorage (في حال وجودها)
+        // إذا كان هناك مستخدم مخزن بالفعل، انتقل إلى التطبيق مباشرة
         (function() {
             const saved = localStorage.getItem('currentUser');
             if (saved) {
-                // إذا كان هناك مستخدم في localStorage، نتحقق من صحة الجلسة مع Firebase
-                // لكن الأفضل تركه للـ onAuthStateChanged
-                // فقط للتأكد: إذا كان المستخدم غير موجود في auth، نحذف localStorage
-                if (!auth.currentUser) {
-                    localStorage.removeItem('currentUser');
-                }
+                window.location.href = 'app.html';
             }
         })();
     </script>
