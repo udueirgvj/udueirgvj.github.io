@@ -8,14 +8,13 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <!-- CSS -->
+    <!-- CSS (التصميم القديم) -->
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <div id="app">
-        <!-- ===== شاشات المصادقة ===== -->
+        <!-- ===== صفحة تسجيل الدخول (واحدة فقط) ===== -->
         <div id="authContainer" class="auth-container">
-            <!-- ===== تسجيل الدخول ===== -->
             <div id="loginContainer" class="auth-box">
                 <div style="text-align: center; margin-bottom: 25px;">
                     <h1 style="color: #667eea; font-size: 40px; margin-bottom: 5px;">تلرفيب</h1>
@@ -28,7 +27,7 @@
                 <button class="link-btn" onclick="UI.showSignup()">إنشاء حساب</button>
             </div>
 
-            <!-- ===== إنشاء حساب (مطابق للصورة بالضبط) ===== -->
+            <!-- إنشاء حساب (يظهر فقط عند الضغط على إنشاء حساب) -->
             <div id="signupContainer" class="auth-box hidden">
                 <div style="text-align: right; margin-bottom: 15px;">
                     <span style="font-size: 14px; color: #667eea; cursor: pointer;" onclick="UI.showLogin()">تسجيل الدخول</span>
@@ -36,20 +35,17 @@
                     <span style="font-size: 14px; color: #333; font-weight: bold;">حساب جديد</span>
                 </div>
                 <p style="color: #666; margin-bottom: 20px; text-align: right;">يرجى تعبئة المعلومات التالية</p>
-                
                 <input type="text" id="signupFullname" placeholder="الاسم">
                 <input type="text" id="signupUsername" placeholder="اسم المستخدم" dir="ltr">
                 <input type="email" id="signupEmail" placeholder="البريد الإلكتروني" dir="ltr">
                 <input type="password" id="signupPassword" placeholder="كلمة المرور">
                 <input type="password" id="signupConfirm" placeholder="تأكيد كلمة المرور">
-                
                 <div id="signupError" class="error"></div>
                 <div id="signupSuccess" class="success"></div>
-                
                 <button onclick="handleSignUp()">التسجيل</button>
             </div>
 
-            <!-- ===== تحقق البريد ===== -->
+            <!-- تحقق البريد (يظهر بعد التسجيل) -->
             <div id="verificationContainer" class="auth-box hidden">
                 <div style="text-align: center;">
                     <h2 style="color: #27ae60; margin-bottom: 20px;">📧 تحقق من بريدك</h2>
@@ -60,7 +56,7 @@
             </div>
         </div>
 
-        <!-- ===== التطبيق الرئيسي (بعد تسجيل الدخول) ===== -->
+        <!-- ===== صفحة التطبيق الرئيسية (تظهر فقط بعد تسجيل الدخول) ===== -->
         <div id="mainApp" class="hidden" style="display: flex; flex-direction: column; height: 100%;">
             <!-- الشريط العلوي -->
             <div class="top-bar">
@@ -75,7 +71,7 @@
                 <div id="searchResults" class="search-results"></div>
             </div>
 
-            <!-- القائمة الجانبية -->
+            <!-- القائمة الجانبية (الإعدادات) -->
             <div id="drawerOverlay" class="drawer-overlay" onclick="UI.closeDrawer()"></div>
             <div id="drawer" class="drawer">
                 <div class="drawer-header">
@@ -105,9 +101,9 @@
                 </div>
             </div>
 
-            <!-- المحتوى الرئيسي -->
+            <!-- المحتوى الرئيسي (قناة المطور + قائمة المحادثات) -->
             <div id="mainContent" class="main-content">
-                <!-- قناة المطور -->
+                <!-- قناة المطور (تصميم قديم) -->
                 <div class="channel-card" onclick="Channel.openChannelChat()">
                     <div class="channel-icon">📢</div>
                     <div class="channel-text">
@@ -151,10 +147,7 @@
                     </div>
                     <button id="subscribeBtn" class="subscribe-btn" onclick="Channel.toggleSubscribe()">اشتراك</button>
                 </div>
-                <div id="channelMessagesContainer" class="messages-container">
-                    <div class="message received"><div>🎉 مرحباً بك في القناة الرسمية للمطور!</div><div class="message-time">منذ دقيقة</div></div>
-                    <div class="message received"><div>📌 هنا ستجد آخر التحديثات والأخبار</div><div class="message-time">منذ دقيقة</div></div>
-                </div>
+                <div id="channelMessagesContainer" class="messages-container"></div>
                 <div class="chat-input-area">
                     <input type="text" id="channelMessageInput" placeholder="اشترك لترسل رسالة..." disabled>
                     <button id="channelSendBtn" onclick="Channel.sendChannelMessage()" disabled>➤</button>
@@ -184,7 +177,7 @@
         </div>
     </div>
 
-    <!-- ملفات الجافاسكريبت (لا تغيرها) -->
+    <!-- ملفات الجافاسكريبت (لا تغيرها نهائياً) -->
     <script src="js/firebase-config.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/chat.js"></script>
