@@ -1,16 +1,12 @@
-// ========== نسخة ثابتة ومستقرة تماماً - بدون تكرار ==========
 const Chat = {
     currentChatUser: null,
     currentChatId: null,
     messagesListener: null,
     chatListListener: null,
-    isListenerActive: false, // لمنع تكرار المستمعين
 
-    // ===== تحميل قائمة المحادثات (مرة واحدة فقط) =====
     loadChatList() {
         if (!Auth.currentUser) return;
         
-        // إلغاء أي مستمع قديم قبل إنشاء جديد
         if (this.chatListListener) {
             this.chatListListener.off();
             this.chatListListener = null;
@@ -24,10 +20,8 @@ const Chat = {
             
             snapshot.forEach(chatSnapshot => {
                 const messages = chatSnapshot.val();
-                // التأكد من أن messages هو كائن وليس null
                 if (messages && typeof messages === 'object') {
                     Object.values(messages).forEach(msg => {
-                        // التأكد من أن msg يحتوي على الحقول المطلوبة
                         if (msg && msg.senderId && msg.receiverId && msg.text && msg.timestamp) {
                             if (msg.senderId === uid || msg.receiverId === uid) {
                                 const otherId = msg.senderId === uid ? msg.receiverId : msg.senderId;
@@ -36,8 +30,7 @@ const Chat = {
                                     conversations.set(otherId, {
                                         userId: otherId,
                                         lastMessage: msg.text,
-                                        timestamp: msg.timestamp,
-                                        messageId: msg.messageId // للتأكد من عدم التكرار
+                                        timestamp: msg.timestamp
                                     });
                                 }
                             }
@@ -46,7 +39,6 @@ const Chat = {
                 }
             });
 
-            // تحويل الخريطة إلى مصفوفة وترتيبها
             const chatList = Array.from(conversations.values())
                 .sort((a, b) => b.timestamp - a.timestamp);
             
@@ -54,12 +46,10 @@ const Chat = {
         });
     },
 
-    // ===== عرض قائمة المحادثات =====
     async renderChatList(chatList) {
         const container = document.getElementById('chatListContainer');
         if (!container) return;
         
-        // مسح المحتوى القديم بشكل كامل
         container.innerHTML = '';
 
         if (chatList.length === 0) {
@@ -67,7 +57,6 @@ const Chat = {
             return;
         }
 
-        // استخدام Promise.all لجلب جميع بيانات المستخدمين مرة واحدة
         const userPromises = chatList.map(async (item) => {
             const userSnap = await db.ref('users').orderByChild('uid').equalTo(item.userId).once('value');
             if (userSnap.exists()) {
@@ -88,18 +77,15 @@ const Chat = {
             chatItem.className = 'chat-list-item';
             chatItem.onclick = () => this.openChat(userData);
 
-            // الصورة الرمزية
             const avatar = document.createElement('div');
             avatar.className = 'chat-avatar';
             avatar.innerText = userData.fullName.charAt(0).toUpperCase();
 
-            // تنسيق الوقت
             const time = new Date(item.timestamp).toLocaleTimeString('ar', { 
                 hour: '2-digit', 
                 minute: '2-digit' 
             });
 
-            // معلومات المحادثة
             const info = document.createElement('div');
             info.className = 'chat-info';
             info.innerHTML = `
@@ -117,7 +103,6 @@ const Chat = {
         });
     },
 
-    // ===== فتح محادثة مع مستخدم =====
     openChat(user) {
         if (!user || !user.uid) return;
         
@@ -131,7 +116,6 @@ const Chat = {
         const ids = [Auth.currentUser.uid, user.uid].sort();
         this.currentChatId = `chat_${ids[0]}_${ids[1]}`;
 
-        // تحديث واجهة الدردشة
         document.getElementById('chatName').innerText = user.fullName;
         const avatarEl = document.getElementById('chatAvatar');
         if (user.photoURL) {
@@ -145,7 +129,6 @@ const Chat = {
         this.loadMessages();
     },
 
-    // ===== إغلاق المحادثة =====
     closeChat() {
         document.getElementById('chatRoom').classList.remove('open');
         if (this.messagesListener) {
@@ -156,11 +139,9 @@ const Chat = {
         this.currentChatId = null;
     },
 
-    // ===== تحميل رسائل المحادثة =====
     loadMessages() {
         if (!this.currentChatId) return;
         
-        // إلغاء المستمع القديم إن وجد
         if (this.messagesListener) {
             this.messagesListener.off();
             this.messagesListener = null;
@@ -199,12 +180,10 @@ const Chat = {
                 container.appendChild(msgDiv);
             });
 
-            // التمرير لآخر رسالة
             container.scrollTop = container.scrollHeight;
         });
     },
 
-    // ===== إرسال رسالة =====
     async sendMessage() {
         const input = document.getElementById('messageInput');
         const text = input.value.trim();
@@ -220,14 +199,13 @@ const Chat = {
 
         try {
             await db.ref(`messages/${this.currentChatId}/${messageData.messageId}`).set(messageData);
-            input.value = ''; // تفريغ الحقل
+            input.value = '';
         } catch (error) {
             console.error('فشل الإرسال:', error);
             alert('فشل في إرسال الرسالة');
         }
     },
 
-    // ===== فتح الرسائل المحفوظة =====
     openSavedMessages() {
         this.openChat({
             uid: Auth.currentUser.uid,
@@ -237,7 +215,6 @@ const Chat = {
         });
     },
 
-    // ===== البحث عن مستخدمين =====
     async searchUsers() {
         const query = document.getElementById('searchInput').value.trim();
         const resultsDiv = document.getElementById('searchResults');
@@ -283,13 +260,12 @@ const Chat = {
         }
     },
 
-    // ===== بدء محادثة من نتائج البحث =====
     startChatFromSearch(uid, username, fullName) {
         UI.closeSearch();
         this.openChat({ uid, username, fullName, photoURL: '' });
     },
 
-    // ===== تنظيف المستمعين (يستدعى عند تسجيل الخروج) =====
+    // دالة التنظيف – تستدعى عند تسجيل الخروج
     cleanUp() {
         if (this.chatListListener) {
             this.chatListListener.off();
