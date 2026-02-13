@@ -13,12 +13,12 @@
 </head>
 <body>
     <div id="app">
-        <!-- ===== شاشات المصادقة (بالشكل المطلوب) ===== -->
+        <!-- ===== شاشات المصادقة (التصميم القديم كما في صورتك) ===== -->
         <div id="authContainer" class="auth-container">
             <!-- تسجيل الدخول -->
             <div id="loginContainer" class="auth-box">
                 <div style="text-align: center; margin-bottom: 25px;">
-                    <h1 style="color: #667eea; font-size: 36px; margin-bottom: 5px;">تلرفيب</h1>
+                    <h1 style="color: #667eea; font-size: 40px; margin-bottom: 5px;">تلرفيب</h1>
                     <p style="color: #666;">مرحباً بكم في تلرفيب</p>
                 </div>
                 <input type="email" id="loginEmail" placeholder="البريد الإلكتروني" dir="ltr">
@@ -28,7 +28,7 @@
                 <button class="link-btn" onclick="UI.showSignup()">إنشاء حساب</button>
             </div>
 
-            <!-- إنشاء حساب جديد -->
+            <!-- إنشاء حساب -->
             <div id="signupContainer" class="auth-box hidden">
                 <h2 style="text-align: center; margin-bottom: 25px; color: #333;">إنشاء حساب</h2>
                 <input type="text" id="signupFullname" placeholder="الاسم الشخصي">
@@ -42,7 +42,7 @@
                 <button class="link-btn" onclick="UI.showLogin()">لديك حساب؟ سجل دخولك</button>
             </div>
 
-            <!-- رسالة تفعيل البريد -->
+            <!-- تحقق البريد -->
             <div id="verificationContainer" class="auth-box hidden">
                 <div style="text-align: center;">
                     <h2 style="color: #27ae60; margin-bottom: 20px;">تحقق من بريدك</h2>
@@ -53,7 +53,7 @@
             </div>
         </div>
 
-        <!-- ===== التطبيق الرئيسي (التصميم القديم) ===== -->
+        <!-- ===== التطبيق الرئيسي (التصميم القديم + الميزات الجديدة) ===== -->
         <div id="mainApp" class="hidden" style="display: flex; flex-direction: column; height: 100%;">
             <!-- الشريط العلوي -->
             <div class="top-bar">
@@ -68,7 +68,7 @@
                 <div id="searchResults" class="search-results"></div>
             </div>
 
-            <!-- القائمة الجانبية (نفس التصميم القديم) -->
+            <!-- القائمة الجانبية -->
             <div id="drawerOverlay" class="drawer-overlay" onclick="UI.closeDrawer()"></div>
             <div id="drawer" class="drawer">
                 <div class="drawer-header">
@@ -80,45 +80,19 @@
                         <div id="drawerUsername" style="color: #666; font-size: 14px;">@username</div>
                     </div>
                 </div>
-                <div class="drawer-menu-item" onclick="UI.showSettings('privacy')">
-                    <span>🔒</span> خصوصية والأمان
-                </div>
-                <div class="drawer-menu-item" onclick="UI.showSettings('counters')">
-                    <span>📊</span> العدادات
-                </div>
-                <div class="drawer-menu-item" onclick="UI.showSettings('embed')">
-                    <span>🔗</span> تضمين الهدادات
-                </div>
-                <div class="drawer-menu-item" onclick="UI.editName()">
-                    <span>✏️</span> تغيير الاسم
-                </div>
-                <div class="drawer-menu-item" onclick="UI.editUsername()">
-                    <span>🆔</span> تغيير اسم المستخدم
-                </div>
-                <div class="drawer-menu-item" onclick="UI.changePhoto()">
-                    <span>🖼️</span> تغيير الصورة
-                </div>
-                <div class="drawer-menu-item" onclick="UI.editBio()">
-                    <span>📝</span> إضافة نبذة
-                </div>
-                <div class="drawer-menu-item" onclick="UI.toggleDarkMode()">
-                    <span>🌙</span> الوضع الداكن
-                </div>
-                <div class="drawer-menu-item" onclick="UI.viewEmail()">
-                    <span>📧</span> عرض البريد
-                </div>
-                <div class="drawer-menu-item" onclick="UI.changePassword()">
-                    <span>🔑</span> تغيير كلمة المرور
-                </div>
-                <div class="drawer-menu-item" onclick="Chat.openCreateGroup()">
-                    <span>➕</span> إنشاء قناة/مجموعة
-                </div>
-                <div class="drawer-menu-item" onclick="Chat.openSavedMessages()">
-                    <span>💾</span> رسائل محفوظة
-                </div>
-                <div class="drawer-menu-item" onclick="UI.openSharea()">
-                    <span>🌐</span> السلاله شاعه
-                </div>
+                <div class="drawer-menu-item" onclick="UI.showSettings('privacy')"><span>🔒</span> خصوصية والأمان</div>
+                <div class="drawer-menu-item" onclick="UI.showSettings('counters')"><span>📊</span> العدادات</div>
+                <div class="drawer-menu-item" onclick="UI.showSettings('embed')"><span>🔗</span> تضمين الهدادات</div>
+                <div class="drawer-menu-item" onclick="UI.editName()"><span>✏️</span> تغيير الاسم</div>
+                <div class="drawer-menu-item" onclick="UI.editUsername()"><span>🆔</span> تغيير اسم المستخدم</div>
+                <div class="drawer-menu-item" onclick="UI.changePhoto()"><span>🖼️</span> تغيير الصورة</div>
+                <div class="drawer-menu-item" onclick="UI.editBio()"><span>📝</span> إضافة نبذة</div>
+                <div class="drawer-menu-item" onclick="UI.toggleDarkMode()"><span>🌙</span> الوضع الداكن</div>
+                <div class="drawer-menu-item" onclick="UI.viewEmail()"><span>📧</span> عرض البريد</div>
+                <div class="drawer-menu-item" onclick="UI.changePassword()"><span>🔑</span> تغيير كلمة المرور</div>
+                <div class="drawer-menu-item" onclick="Chat.openCreateGroup()"><span>➕</span> إنشاء قناة/مجموعة</div>
+                <div class="drawer-menu-item" onclick="Chat.openSavedMessages()"><span>💾</span> رسائل محفوظة</div>
+                <div class="drawer-menu-item" onclick="UI.openSharea()"><span>🌐</span> السلاله شاعه</div>
                 <div style="margin-top: 30px;">
                     <button onclick="Auth.logout()" style="background: #e74c3c;">تسجيل خروج</button>
                 </div>
@@ -133,12 +107,10 @@
                         <div class="channel-title">المطور تطبيق</div>
                         <div class="channel-sub">يرحب بكم إلى نظام القناة الخاصة بالتطبيق</div>
                     </div>
-                    <div style="background: #f0f0f0; color: #667eea; padding: 4px 12px; border-radius: 16px; font-size: 12px;">
-                        700K+
-                    </div>
+                    <div style="background: #f0f0f0; color: #667eea; padding: 4px 12px; border-radius: 16px; font-size: 12px;">700K+</div>
                 </div>
 
-                <!-- قائمة المحادثات (دردشات + قنوات) -->
+                <!-- قائمة المحادثات -->
                 <div id="chatListContainer" class="chat-list"></div>
             </div>
 
@@ -161,7 +133,7 @@
                 </div>
             </div>
 
-            <!-- غرفة قناة المطور (تصميم قديم) -->
+            <!-- غرفة قناة المطور -->
             <div id="channelChatRoom" class="chat-room">
                 <div class="chat-header">
                     <div class="back-btn" onclick="Channel.closeChannelChat()">←</div>
@@ -173,14 +145,8 @@
                     <button id="subscribeBtn" class="subscribe-btn" onclick="Channel.toggleSubscribe()">اشتراك</button>
                 </div>
                 <div id="channelMessagesContainer" class="messages-container">
-                    <div class="message received">
-                        <div>🎉 مرحباً بك في القناة الرسمية للمطور!</div>
-                        <div class="message-time">منذ دقيقة</div>
-                    </div>
-                    <div class="message received">
-                        <div>📌 هنا ستجد آخر التحديثات والأخبار</div>
-                        <div class="message-time">منذ دقيقة</div>
-                    </div>
+                    <div class="message received"><div>🎉 مرحباً بك في القناة الرسمية للمطور!</div><div class="message-time">منذ دقيقة</div></div>
+                    <div class="message received"><div>📌 هنا ستجد آخر التحديثات والأخبار</div><div class="message-time">منذ دقيقة</div></div>
                 </div>
                 <div class="chat-input-area">
                     <input type="text" id="channelMessageInput" placeholder="اشترك لترسل رسالة..." disabled>
@@ -208,7 +174,7 @@
         </div>
     </div>
 
-    <!-- JavaScript Files -->
+    <!-- ملفات الجافاسكريبت (لا تغيرها) -->
     <script src="js/firebase-config.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/chat.js"></script>
