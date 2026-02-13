@@ -9,7 +9,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        /* نفس التنسيقات القديمة للمصادقة فقط */
         * {
             margin: 0;
             padding: 0;
@@ -144,7 +143,8 @@
             <div id="signupContainer" class="auth-box hidden">
                 <h2>📝 إنشاء حساب</h2>
                 <input type="text" id="signupFullname" placeholder="الاسم الشخصي">
-                <input type="text" id="signupUsername" placeholder="اسم المستخدم (5 أحرف إنجليزية على الأقل)">
+                <input type="text" id="signupUsername" placeholder="اسم المستخدم (5-10 أحرف إنجليزية)">
+                <input type="email" id="signupEmail" placeholder="البريد الإلكتروني" dir="ltr">
                 <input type="password" id="signupPassword" placeholder="كلمة المرور">
                 <input type="password" id="signupConfirm" placeholder="تأكيد كلمة المرور">
                 <div id="signupError" class="error"></div>
@@ -157,7 +157,7 @@
             <div id="verificationContainer" class="auth-box hidden">
                 <div style="text-align: center;">
                     <h2 style="color: #27ae60; margin-bottom: 20px;">📧 تحقق من بريدك</h2>
-                    <p style="margin: 20px 0; color: #555;">تم إرسال رابط التفعيل إلى بريدك الإلكتروني.</p>
+                    <p style="margin: 20px 0; color: #555;">تم إرسال رابط التفعيل إلى بريدك الإلكتروني. يرجى تفعيل حسابك ثم تسجيل الدخول.</p>
                     <button onclick="resendVerificationEmail()">إعادة إرسال</button>
                     <button class="link-btn" onclick="showLogin()">تسجيل الدخول</button>
                 </div>
@@ -182,7 +182,7 @@
         const auth = firebase.auth();
 
         // -------------------- متغيرات ودوال عامة --------------------
-        let currentUser = null; // لن يُستخدم هنا إلا مؤقتاً
+        let currentUser = null;
 
         // التحقق من صحة اسم المستخدم
         function isValidUsername(username) {
@@ -216,13 +216,14 @@
         async function handleSignUp() {
             const fullName = document.getElementById('signupFullname').value.trim();
             const username = document.getElementById('signupUsername').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
             const password = document.getElementById('signupPassword').value.trim();
             const confirm = document.getElementById('signupConfirm').value.trim();
 
             document.getElementById('signupError').innerText = '';
             document.getElementById('signupSuccess').innerText = '';
 
-            if (!fullName || !username || !password || !confirm) {
+            if (!fullName || !username || !email || !password || !confirm) {
                 document.getElementById('signupError').innerText = 'جميع الحقول مطلوبة';
                 return;
             }
@@ -239,50 +240,52 @@
                 return;
             }
 
-            const available = await isUsernameAvailable(username);
-            if (!available) {
-                document.getElementById('signupError').innerText = 'اسم المستخدم غير متاح';
-                return;
-            }
-
             try {
-                // سنستخدم بريداً وهمياً لأن التسجيل يحتاج بريد إلكتروني.
-                // هنا نفترض أن المستخدم سيدخل بريداً، لكن الحقل غير موجود. 
-                // الحل: إضافة حقل بريد إلكتروني في واجهة إنشاء حساب.
-                // لكن في ملفك الأصلي كان هناك حقل بريد، لكن هذا الملف لا يحتويه. سأضيفه.
-                // لكن تبسيطاً: سأستخدم بريداً مؤقتاً. لكن الأفضل إضافة الحقل.
-                // سأعدل قليلاً: أضف حقل بريد في الأعلى.
-                // بما أن المستخدم يريد الحفاظ على الوظائف، سأضيف حقل بريد هنا كما في ملفه الأصلي.
-                // لكني أرى في ملفه الأصلي أن إنشاء الحساب كان ببريد. لذا سأضيف الحقل الآن.
-                // لتجنب التعقيد، سأفترض أن الكود الأصلي كان يحتوي على حقل بريد. سأضيفه.
-                // ولكن في الملف الذي أرسله المستخدم، لم يكن هناك حقل بريد في إنشاء الحساب. 
-                // هذا تناقض. لكن لاحظ أن الملف الأصلي الذي أرسله المستخدم في بداية المحادثة كان يحتوي على حقل بريد في تسجيل الدخول فقط.
-                // في هذا الملف الجديد (المرسل قبل قليل) كان إنشاء الحساب بدون بريد. هذا خطأ.
-                // لتصحيح الأمر، سأعتمد على النسخة التي كانت تعمل بشكل صحيح والتي تحتوي على بريد إلكتروني.
-                // لذلك سأضيف حقلاً للبريد الإلكتروني في واجهة إنشاء الحساب.
+                // التحقق من توفر اسم المستخدم
+                const available = await isUsernameAvailable(username);
+                if (!available) {
+                    document.getElementById('signupError').innerText = 'اسم المستخدم غير متاح';
+                    return;
+                }
 
-                // إضافة حقل بريد إلكتروني إلى HTML
-                // سأقوم بتعديل HTML أعلاه بإضافة <input type="email" id="signupEmail">
-                // لكني لا أستطيع تعديل HTML هنا في هذا الرد بعد كتابته. 
-                // الحل: سأكتب الكود وكأن الحقل موجود، وسأشير إلى أنه يجب إضافته.
-                // لذلك سأكتب تعليقاً في الكود لتنبيه المستخدم.
+                // إنشاء المستخدم في Firebase Authentication
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                const user = userCredential.user;
 
-                // ولكن الأسهل: سأستخدم نسخة المصادقة التي تعتمد على اسم المستخدم وكلمة المرور فقط (بدون بريد) كما في ملفه الأصلي.
-                // لكن ذلك سيعطل ميزة التحقق بالبريد. لذا الأفضل إضافة البريد.
+                // إرسال بريد التحقق
+                await user.sendEmailVerification();
 
-                // سأقوم بكتابة كود يتضمن البريد كما في النسخة المستقرة التي أعطيتها إياه سابقاً.
-                // سأضطر لإعادة كتابة جزء من الكود ليشمل البريد.
+                // حفظ بيانات المستخدم في Realtime Database
+                const userData = {
+                    uid: user.uid,
+                    fullName,
+                    username,
+                    email,
+                    photoURL: '',
+                    bio: '',
+                    emailVerified: false,
+                    subscribedChannel: false,
+                    createdAt: new Date().toISOString(),
+                    lastLogin: new Date().toISOString()
+                };
+                await db.ref(`users/${user.uid}`).set(userData);
+                await db.ref(`usernames/${username}`).set(user.uid);
 
-                // بما أن الوقت محدود، سأعطي حلاً عملياً: استخدام نفس دوال auth.js التي كان يملكها، مع تعديل بسيط.
-                // لكن المستخدم يريد ملفاً واحداً للمصادقة، لذا سأدرج دوال المصادقة كاملة كما كانت في ملفه الأصلي ولكن مع إضافة cleanUp.
+                // تسجيل الخروج فوراً (لأن البريد غير مفعل)
+                await auth.signOut();
 
-                // سأستخدم الكود الكامل للمصادقة من النسخة السابقة مع تعديل بسيط للتحويل إلى app.html بعد login.
-
-                // سأكتب الحل بشكل مختصر وفعال.
-                // (سيتم إرفاق الكود كاملاً في النهاية)
-
+                // عرض شاشة التحقق
+                document.getElementById('signupSuccess').innerText = 'تم إنشاء الحساب. الرجاء تفعيل بريدك الإلكتروني.';
+                setTimeout(() => {
+                    showVerification();
+                }, 2000);
             } catch (error) {
-                document.getElementById('signupError').innerText = error.message;
+                console.error(error);
+                if (error.code === 'auth/email-already-in-use') {
+                    document.getElementById('signupError').innerText = 'البريد الإلكتروني مستخدم بالفعل';
+                } else {
+                    document.getElementById('signupError').innerText = error.message;
+                }
             }
         }
 
@@ -293,43 +296,89 @@
             const errorDiv = document.getElementById('loginError');
             errorDiv.innerText = '';
 
-            // نبحث عن المستخدم في قاعدة البيانات
-            const snapshot = await db.ref('users').orderByChild('username').equalTo(username).once('value');
-            if (!snapshot.exists()) {
-                errorDiv.innerText = 'المستخدم غير موجود';
-                return;
-            }
-            let userData;
-            snapshot.forEach(child => userData = child.val());
-            if (userData.password !== password) {
-                errorDiv.innerText = 'كلمة المرور غير صحيحة';
-                return;
-            }
+            try {
+                // البحث عن المستخدم بواسطة اسم المستخدم
+                const snapshot = await db.ref('users').orderByChild('username').equalTo(username).once('value');
+                if (!snapshot.exists()) {
+                    errorDiv.innerText = 'المستخدم غير موجود';
+                    return;
+                }
 
-            // تخزين بيانات المستخدم في localStorage
-            localStorage.setItem('currentUser', JSON.stringify(userData));
-            // التوجيه إلى صفحة التطبيق
-            window.location.href = 'app.html';
+                let userData;
+                snapshot.forEach(child => userData = child.val());
+
+                // تسجيل الدخول باستخدام البريد الإلكتروني
+                const userCredential = await auth.signInWithEmailAndPassword(userData.email, password);
+                const user = userCredential.user;
+
+                // التحقق من تفعيل البريد
+                if (!user.emailVerified) {
+                    await auth.signOut();
+                    errorDiv.innerText = 'الرجاء تفعيل بريدك الإلكتروني أولاً';
+                    return;
+                }
+
+                // تحديث آخر دخول
+                await db.ref(`users/${user.uid}/lastLogin`).set(new Date().toISOString());
+                await db.ref(`users/${user.uid}/emailVerified`).set(true);
+
+                // حفظ بيانات المستخدم في localStorage
+                const updatedUser = { ...userData, emailVerified: true };
+                localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+
+                // التوجيه إلى صفحة التطبيق
+                window.location.href = 'app.html';
+            } catch (error) {
+                console.error(error);
+                if (error.code === 'auth/wrong-password') {
+                    errorDiv.innerText = 'كلمة المرور غير صحيحة';
+                } else {
+                    errorDiv.innerText = error.message;
+                }
+            }
         }
 
-        // إعادة إرسال بريد التحقق (لن تُستخدم هنا لأننا لا نستخدم البريد)
+        // إعادة إرسال رابط التفعيل
         async function resendVerificationEmail() {
-            // يمكن حذفها أو تركها فارغة
+            try {
+                if (auth.currentUser) {
+                    await auth.currentUser.sendEmailVerification();
+                    alert('تم إعادة إرسال رابط التفعيل');
+                } else {
+                    alert('لا يوجد مستخدم مسجل حالياً');
+                }
+            } catch (error) {
+                alert(error.message);
+            }
         }
 
         // التحقق من وجود مستخدم مسجل دخول بالفعل عند تحميل الصفحة
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                // إذا كان هناك مستخدم مسجل دخول، ننقله إلى التطبيق
-                window.location.href = 'app.html';
+        auth.onAuthStateChanged(async (user) => {
+            if (user && user.emailVerified) {
+                // إذا كان المستخدم مسجل دخوله وبريده مفعل، ننقله إلى التطبيق مباشرة
+                const saved = localStorage.getItem('currentUser');
+                if (saved) {
+                    window.location.href = 'app.html';
+                } else {
+                    // إذا لم يكن في localStorage، نجلب البيانات من قاعدة البيانات
+                    const snap = await db.ref(`users/${user.uid}`).once('value');
+                    const userData = snap.val();
+                    localStorage.setItem('currentUser', JSON.stringify(userData));
+                    window.location.href = 'app.html';
+                }
             }
         });
 
-        // استعادة الجلسة من localStorage
+        // استعادة الجلسة من localStorage (في حال وجودها)
         (function() {
             const saved = localStorage.getItem('currentUser');
             if (saved) {
-                window.location.href = 'app.html';
+                // إذا كان هناك مستخدم في localStorage، نتحقق من صحة الجلسة مع Firebase
+                // لكن الأفضل تركه للـ onAuthStateChanged
+                // فقط للتأكد: إذا كان المستخدم غير موجود في auth، نحذف localStorage
+                if (!auth.currentUser) {
+                    localStorage.removeItem('currentUser');
+                }
             }
         })();
     </script>
