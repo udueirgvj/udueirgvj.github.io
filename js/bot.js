@@ -1,8 +1,8 @@
-// ==================== bot.js ====================
-// هذا الملف يحتوي على كل منطق البوتات (TTDBOT و BotMaker)
-// يمكن تطويره بشكل منفرد دون التأثير على باقي التطبيق
+// ===================================================
+// bots.js - كل ما يتعلق بالبوتات (TTDBOT و BotMaker)
+// ===================================================
 
-// ========== كائن TTDBOT (البوت الرسمي الموثق) ==========
+// كائن TTDBOT (البوت الرسمي الموثق)
 const TTDBOT = {
     async startConversation(chatObj, currentUser, db, sendMessageCallback) {
         chatObj.currentChatType = 'bot';
@@ -46,19 +46,17 @@ const TTDBOT = {
                 if (check.exists()) {
                     reply = '❌ اسم المستخدم مستخدم بالفعل. اختر اسماً آخر:';
                 } else {
-                    // إنشاء توكن
                     const token = this.generateToken();
                     reply = `✅ تم إنشاء البوت بنجاح!\nالاسم: ${state.name}\nاسم المستخدم: @${username}\nالتوكن: ${token}\n\nاحتفظ بهذا التوكن لاستخدام البوت.`;
                     
-                    // حفظ البوت في قاعدة البيانات
                     await db.ref(`bots/${username}`).set({
                         name: state.name,
                         username,
                         token,
-                        type: 'basic', // نوع أساسي
+                        type: 'basic',
                         owner: currentUser.uid,
                         createdAt: Date.now(),
-                        verified: false // غير موثق
+                        verified: false
                     });
                     await db.ref(`usernames/${username}`).set('bot_' + username);
                     state = { step: 'idle' };
@@ -82,7 +80,8 @@ const TTDBOT = {
         return token;
     }
 };
-// ========== كائن BotMaker (صانع البوتات المتقدم) ==========
+
+// كائن BotMaker (صانع البوتات المتقدم)
 const BotMaker = {
     async startConversation(chatObj, currentUser, db, sendMessageCallback) {
         chatObj.currentChatType = 'botmaker';
@@ -110,7 +109,6 @@ const BotMaker = {
             </div>
         `;
         
-        // تهيئة حالة البوت
         await db.ref(`botMakerState/${currentUser.uid}`).set({ step: 'awaiting_choice' });
     },
 
@@ -120,7 +118,6 @@ const BotMaker = {
         let state = snap.val() || { step: 'awaiting_choice' };
         let reply = '';
 
-        // مرحلة اختيار النوع
         if (state.step === 'awaiting_choice') {
             const choice = parseInt(text);
             let type = '';
@@ -140,10 +137,8 @@ const BotMaker = {
             return;
         }
 
-        // مرحلة إدخال التوكن
         if (state.step === 'awaiting_token') {
             const token = text.trim();
-            // البحث عن البوت باستخدام التوكن
             const botsSnap = await db.ref('bots').once('value');
             let foundBot = null;
             let foundUsername = null;
@@ -161,30 +156,25 @@ const BotMaker = {
                 return;
             }
 
-            // تحديث البوت بنوعه الجديد وجعله موثقاً (دعم تطوير)
             await db.ref(`bots/${foundUsername}`).update({
                 type: state.type,
                 verified: true,
                 upgradedAt: Date.now()
             });
 
-            // إنشاء معرف مختصر للبوت (مثل @username)
             const botLink = `@${foundUsername}`;
-
             reply = `✅ تم ترقية بوتك بنجاح!\nالنوع: ${state.type}\nالاسم: ${foundBot.name}\nرابط البوت: ${botLink}\n\nيمكنك الآن استخدام البوت بالضغط على الرابط أعلاه.`;
             
-            // إعادة تعيين الحالة
             await stateRef.set({ step: 'idle' });
             await sendMessageCallback('botmaker', reply);
             return;
         }
 
-        // إذا كانت الحالة idle أو أي شيء آخر
         reply = '👋 أرسل /start للبدء.';
         await sendMessageCallback('botmaker', reply);
     }
 };
 
-// تصدير الكائنات للاستخدام في الملفات الأخرى
+// تصدير الكائنات
 window.TTDBOT = TTDBOT;
 window.BotMaker = BotMaker;
