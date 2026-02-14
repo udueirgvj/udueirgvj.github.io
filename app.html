@@ -1128,48 +1128,71 @@
         };
 
         // -------------------- كائن Search (بحث شامل محسّن) --------------------
-        const Search = {
-            async handle() {
-                const query = document.getElementById('searchInput').value.trim().toLowerCase();
-                const resultsDiv = document.getElementById('searchResults');
-                
-                if (query.length < 2) {
-                    resultsDiv.classList.remove('show');
-                    return;
-                }
+        // -------------------- كائن Search (بحث شامل محسّن) --------------------
+const Search = {
+    async handle() {
+        const query = document.getElementById('searchInput').value.trim().toLowerCase();
+        const resultsDiv = document.getElementById('searchResults');
+        
+        if (query.length < 2) {
+            resultsDiv.classList.remove('show');
+            return;
+        }
 
-                let html = '';
+        let html = '';
 
-                // 1. البحث عن المستخدمين
-                try {
-                    const usersSnap = await db.ref('users')
-                        .orderByChild('username')
-                        .startAt(query)
-                        .endAt(query + '\uf8ff')
-                        .limitToFirst(10)
-                        .once('value');
+        // 1. البحث عن المستخدمين
+        const usersSnap = await db.ref('users').once('value');
+        usersSnap.forEach(child => {
+            const u = child.val();
+            if (u.username && u.username.toLowerCase().includes(query) && u.uid !== currentUser.uid) {
+                html += `<div class="search-result-item" onclick="Chat.startPrivate('${u.uid}', '${u.username}', '${u.fullName}')">
+                    <div class="chat-avatar">${u.fullName.charAt(0)}</div>
+                    <div><strong>${u.fullName}</strong><br><span style="color:#666;">@${u.username}</span></div>
+                </div>`;
+            }
+        });
 
-                    usersSnap.forEach(child => {
-                        const u = child.val();
-                        if (u.uid !== currentUser.uid && u.username !== SUPPORT_USERNAME) {
-                            html += `<div class="search-result-item" onclick="Chat.startPrivate('${u.uid}', '${u.username}', '${u.fullName}')">
-                                <div class="chat-avatar">${u.fullName.charAt(0)}</div>
-                                <div><strong>${u.fullName}</strong><br><span style="color:#666;">@${u.username}</span></div>
-                            </div>`;
-                        }
-                    });
-                } catch (e) {
-                    console.log('استمرار البحث المحلي للمستخدمين', e);
-                    const usersSnap = await db.ref('users').once('value');
-                    usersSnap.forEach(child => {
-                        const u = child.val();
-                        if (u.username && u.username.toLowerCase().includes(query) && u.uid !== currentUser.uid && u.username !== SUPPORT_USERNAME) {
-                            html += `<div class="search-result-item" onclick="Chat.startPrivate('${u.uid}', '${u.username}', '${u.fullName}')">
-                                <div class="chat-avatar">${u.fullName.charAt(0)}</div>
-                                <div><strong>${u.fullName}</strong><br><span style="color:#666;">@${u.username}</span></div>
-                            </div>`;
-                        }
-                    });
+        // 2. البحث عن القنوات والمجموعات
+        const groupsSnap = await db.ref('groups').once('value');
+        groupsSnap.forEach(child => {
+            const g = child.val();
+            if (g.name && g.name.toLowerCase().includes(query)) {
+                const typeLabel = g.type === 'channel' ? '📢 قناة' : '👥 مجموعة';
+                html += `<div class="search-result-item" onclick="GroupsAndChannels.open('${g.id}')">
+                    <div class="chat-avatar" style="border-radius:${g.type === 'channel' ? '8px' : '50%'};">${g.type === 'channel' ? '📢' : '👥'}</div>
+                    <div><strong>${g.name}</strong><br><span style="color:#666;">@${g.username} • ${typeLabel} • ${g.memberCount || 0} عضو</span></div>
+                </div>`;
+            }
+        });
+
+        // 3. البوتات الثابتة
+        if ('ttdbot'.includes(query)) {
+            html += `<div class="search-result-item" onclick="Chat.startPrivate('ttdbot', 'ttdbot', 'TTDBOT')">
+                <div class="chat-avatar" style="background:#2196f3;">🤖</div>
+                <div><strong>TTDBOT</strong> <span class="verified-badge">موثق</span><br><span style="color:#666;">@ttdbot</span></div>
+            </div>`;
+        }
+
+        if ('botmaker'.includes(query)) {
+            html += `<div class="search-result-item" onclick="Chat.startPrivate('botmaker', 'botmaker', 'BotMaker')">
+                <div class="chat-avatar" style="background:#9c27b0;">🤖</div>
+                <div><strong>BotMaker</strong> <span style="background:#9c27b0; color:white; padding:2px 6px; border-radius:12px;">صانع البوتات</span><br><span style="color:#666;">@botmaker</span></div>
+            </div>`;
+        }
+
+        // 4. فريق الدعم
+        if ('volunteer support'.includes(query) || 'support'.includes(query)) {
+            html += `<div class="search-result-item" onclick="Support.startSupportChat()">
+                <div class="chat-avatar" style="background:#4caf50;">🎧</div>
+                <div><strong>فريق الدعم</strong> <span class="support-badge">دعم</span><br><span style="color:#666;">@volunteer support</span></div>
+            </div>`;
+        }
+
+        resultsDiv.innerHTML = html || '<div style="padding:12px; color:#999;">لا توجد نتائج</div>';
+        resultsDiv.classList.add('show');
+    }
+};
                 }
 
                 // 2. البحث عن القنوات والمجموعات
@@ -1259,3 +1282,4 @@
     </script>
 </body>
 </html>
+
