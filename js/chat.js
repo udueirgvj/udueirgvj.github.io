@@ -1,11 +1,10 @@
 // ===================================================
 // chat.js - كل ما يتعلق بالمحادثات الخاصة والجماعية
-// مع إصلاح مشكلة اختفاء المحادثات وإضافة بوتات ثابتة
+// (بدون كود البوتات - تم نقله إلى bots.js)
 // ===================================================
 
-let chatListListener = null; // مستمع قائمة المحادثات
+let chatListListener = null;
 
-// كائن Chat الرئيسي (يدير المحادثات الخاصة والبوتات والمجموعات)
 const Chat = {
     currentChat: null,
     currentChatId: null,
@@ -17,7 +16,6 @@ const Chat = {
     replyToMessage: null,
     forwardMessage: null,
 
-    // دالة لعرض واجهة "لا توجد رسائل" بشكل جميل
     showEmptyChat(container, userName, userStatus, avatarChar) {
         container.innerHTML = `
             <div class="empty-chat-container">
@@ -33,14 +31,11 @@ const Chat = {
         `;
     },
 
-    // بدء محادثة خاصة مع مستخدم
     async startPrivate(uid, username, fullName) {
-        // إذا كان المستخدم هو بوت TTDBOT
         if (uid === 'ttdbot') {
             await TTDBOT.startConversation(this, currentUser, db, this.sendBotMessage.bind(this));
             return;
         }
-        // إذا كان المستخدم هو BotMaker
         if (uid === 'botmaker') {
             await BotMaker.startConversation(this, currentUser, db, this.sendBotMessage.bind(this));
             return;
@@ -51,7 +46,6 @@ const Chat = {
         const ids = [currentUser.uid, uid].sort();
         this.currentChatId = `private_${ids[0]}_${ids[1]}`;
         
-        // جلب حالة الاتصال
         const statusSnap = await db.ref(`status/${uid}`).once('value');
         const status = statusSnap.val();
         let statusText = '';
@@ -64,7 +58,6 @@ const Chat = {
         this.openChatUI(fullName, fullName.charAt(0), statusText);
         this.loadPrivateMessages(uid);
         
-        // الاستماع لتغييرات حالة الاتصال
         this.presenceListeners[uid] = db.ref(`status/${uid}`).on('value', (snap) => {
             const s = snap.val();
             if (s && s.state === 'online') {
@@ -76,7 +69,6 @@ const Chat = {
         });
     },
 
-    // فتح الدردشة باستخدام اسم المستخدم (للروابط)
     startPrivateByUsername(username) {
         db.ref('users').orderByChild('username').equalTo(username).once('value', (snap) => {
             if (snap.exists()) {
@@ -99,7 +91,6 @@ const Chat = {
         });
     },
 
-    // حساب الوقت المنقضي
     timeAgo(timestamp) {
         const seconds = Math.floor((Date.now() - timestamp) / 1000);
         if (seconds < 60) return 'منذ لحظات';
@@ -111,7 +102,6 @@ const Chat = {
         return `منذ ${days} يوم`;
     },
 
-    // فتح واجهة الدردشة
     openChatUI(name, avatarChar, status) {
         const nameSpan = document.getElementById('chatName');
         if (name === 'TTDBOT') {
@@ -126,7 +116,6 @@ const Chat = {
         document.getElementById('chatRoom').classList.add('open');
     },
 
-    // إغلاق الدردشة
     close() {
         document.getElementById('chatRoom').classList.remove('open');
         if (this.messagesListener) this.messagesListener.off();
@@ -143,7 +132,6 @@ const Chat = {
         this.forwardMessage = null;
     },
 
-    // تحميل الرسائل الخاصة
     loadPrivateMessages(otherUid) {
         const messagesRef = db.ref(`messages/${this.currentChatId}`);
         this.messagesListener = messagesRef.orderByChild('timestamp').on('value', (snap) => {
@@ -151,7 +139,6 @@ const Chat = {
         });
     },
 
-    // تحميل رسائل المجموعة
     loadGroupMessages(groupId) {
         this.currentGroupId = groupId;
         const messagesRef = db.ref(`groupMessages/${groupId}`);
@@ -160,7 +147,6 @@ const Chat = {
         });
     },
 
-    // عرض الرسائل في الواجهة
     async displayMessages(snapshot, isGroup = false) {
         const container = document.getElementById('messagesContainer');
         container.innerHTML = '';
@@ -200,7 +186,6 @@ const Chat = {
         container.scrollTop = container.scrollHeight;
     },
 
-    // إظهار قائمة الإجراءات عند النقر على رسالة
     showMessageActions(messageId, text) {
         const action = prompt('اختر:\n1️⃣ للرد على الرسالة\n2️⃣ لإعادة توجيه الرسالة\n3️⃣ للإشارة إلى عضو');
         if (action === '1') this.setReplyTo(messageId, text);
@@ -210,18 +195,15 @@ const Chat = {
         } else if (action === '3') this.showMentionSuggestions();
     },
 
-    // تعيين رسالة للرد عليها
     setReplyTo(messageId, text) {
         this.replyToMessage = { id: messageId, text };
         document.getElementById('messageInput').placeholder = `الرد على: ${text.substring(0, 20)}...`;
     },
 
-    // تعيين رسالة لإعادة التوجيه
     setForwardMessage(messageId, text) {
         this.forwardMessage = { id: messageId, text };
     },
 
-    // إعادة توجيه الرسالة إلى مستخدم آخر
     async forwardMessageTo(uid, username, fullName) {
         if (!this.forwardMessage) return;
         
@@ -243,19 +225,16 @@ const Chat = {
         alert('تم إعادة توجيه الرسالة بنجاح');
     },
 
-    // إلغاء الرد
     clearReply() {
         this.replyToMessage = null;
         document.getElementById('messageInput').placeholder = 'اكتب رسالة...';
     },
 
-    // إرسال رسالة (خاصة أو جماعية)
     async sendMessage() {
         const input = document.getElementById('messageInput');
         const text = input.value.trim();
         if (!text || !this.currentChatId) return;
 
-        // إذا كانت المحادثة مع بوت
         if (this.currentChatType === 'bot') {
             await TTDBOT.handleMessage(text, currentUser, db, this.sendBotMessage.bind(this));
             input.value = '';
@@ -267,7 +246,19 @@ const Chat = {
             return;
         }
 
-        // محادثة خاصة
+        if (this.currentChatType === 'support' || this.currentChatType === 'support_staff') {
+            const supportId = this.currentChatId.replace('support_', '');
+            const msg = {
+                messageId: db.ref().push().key,
+                senderId: currentUser.uid,
+                text: text,
+                timestamp: Date.now()
+            };
+            await db.ref(`support/${supportId}/messages/${msg.messageId}`).set(msg);
+            input.value = '';
+            return;
+        }
+
         if (this.currentChatType === 'private') {
             const msg = {
                 messageId: db.ref().push().key,
@@ -278,9 +269,7 @@ const Chat = {
             };
             if (this.replyToMessage) msg.replyTo = this.replyToMessage.text;
             await db.ref(`messages/${this.currentChatId}/${msg.messageId}`).set(msg);
-        } 
-        // محادثة جماعية (مجموعة أو قناة)
-        else {
+        } else {
             const groupId = this.currentChatId.replace('group_', '');
             const groupSnap = await db.ref(`groups/${groupId}`).once('value');
             const group = groupSnap.val();
@@ -305,7 +294,6 @@ const Chat = {
         input.value = '';
     },
 
-    // إرسال رسالة من البوت
     async sendBotMessage(senderId, text) {
         const botMsg = {
             messageId: db.ref().push().key,
@@ -325,7 +313,6 @@ const Chat = {
         container.scrollTop = container.scrollHeight;
     },
 
-    // دوال مساعدة (قيد التطوير)
     banUser() { alert('خاصية الحظر قيد التطوير'); },
     showMentionSuggestions() { alert('خاصية الإشارة قيد التطوير'); },
     insertMention(username) {},
@@ -340,34 +327,25 @@ const Chat = {
     }
 };
 
-// ===================================================
-// كائن Channel (قناة المطور) - جزء من المحادثات
-// ===================================================
 const Channel = {
     open() {
         alert('قناة المطور: سيتم فتحها قريباً');
     }
 };
 
-// ===================================================
-// قائمة المحادثات (الخاصة والعامة) - نسخة محسنة لا تختفي
-// ===================================================
-
-// دالة تحميل قائمة المحادثات (تستدعى مرة واحدة وتحدث بشكل مستمر)
 function loadChatList() {
-    if (chatListListener) chatListListener.off(); // إلغاء المستمع القديم إن وجد
+    if (chatListListener) chatListListener.off();
     
     const uid = currentUser.uid;
-    // خريطة للمحادثات (userId -> آخر رسالة)
     const conversations = new Map();
 
-    // 1. إضافة البوتات الثابتة دائماً (حتى لو لم تكن هناك محادثات)
+    // إضافة البوتات الثابتة
     conversations.set('ttdbot', {
         id: 'ttdbot',
         type: 'bot',
         lastMessage: 'بوت إنشاء البوتات',
         timestamp: Date.now(),
-        isStatic: true // علامة للإشارة إلى أنها ثابتة (لن تختفي)
+        isStatic: true
     });
     conversations.set('botmaker', {
         id: 'botmaker',
@@ -377,9 +355,7 @@ function loadChatList() {
         isStatic: true
     });
 
-    // 2. الاستماع للتغييرات في الرسائل الخاصة
     chatListListener = db.ref('messages').on('value', (snapshot) => {
-        // نمرر على جميع المحادثات في messages
         snapshot.forEach(chatSnap => {
             const msgs = chatSnap.val();
             if (msgs && typeof msgs === 'object') {
@@ -387,7 +363,6 @@ function loadChatList() {
                     if (msg.senderId === uid || msg.receiverId === uid) {
                         const otherId = msg.senderId === uid ? msg.receiverId : msg.senderId;
                         const existing = conversations.get(otherId);
-                        // إذا كانت المحادثة موجودة مسبقاً وليست ثابتة أو أن الرسالة أحدث
                         if (!existing || existing.timestamp < msg.timestamp) {
                             conversations.set(otherId, {
                                 id: otherId,
@@ -402,11 +377,9 @@ function loadChatList() {
             }
         });
 
-        // 3. جلب المجموعات التي هو عضو فيها
         db.ref('groupMembers').orderByChild('uid').equalTo(uid).once('value', (memberSnap) => {
             memberSnap.forEach(member => {
                 const groupId = member.key;
-                // نأخذ آخر رسالة من المجموعة
                 db.ref(`groupMessages/${groupId}`).orderByChild('timestamp').limitToLast(1).once('value', (msgSnap) => {
                     let lastMsg = 'أنشئت حديثاً', lastTime = Date.now();
                     msgSnap.forEach(m => {
@@ -421,35 +394,29 @@ function loadChatList() {
                         timestamp: lastTime,
                         isStatic: false
                     });
-                    // بعد تحديث كل مجموعة، نعيد رسم القائمة
                     renderChatList(Array.from(conversations.values()));
                 });
             });
         });
 
-        // 4. نرسم القائمة بعد تحديث الرسائل الخاصة (المجموعات ستضاف لاحقاً)
         renderChatList(Array.from(conversations.values()));
     });
 }
 
-// دالة عرض قائمة المحادثات
 async function renderChatList(list) {
     const container = document.getElementById('chatListContainer');
     if (!container) return;
     
-    // ترتيب حسب الأحدث (مع إبقاء البوتات ثابتة في مكانها إذا أردنا)
-    // لكننا نرتب حسب timestamp عادي
     list.sort((a, b) => b.timestamp - a.timestamp);
 
     let html = '';
     for (let item of list) {
         if (item.type === 'user') {
             const userSnap = await db.ref('users').orderByChild('uid').equalTo(item.id).once('value');
-            if (!userSnap.exists()) continue; // تجاهل إذا لم يعد المستخدم موجوداً
+            if (!userSnap.exists()) continue;
             let user;
             userSnap.forEach(u => user = u.val());
 
-            // حالة الاتصال
             const statusSnap = await db.ref(`status/${user.uid}`).once('value');
             const status = statusSnap.val();
             const isOnline = status && status.state === 'online';
@@ -521,7 +488,6 @@ async function renderChatList(list) {
     }
 }
 
-// تصدير الدوال والكائنات
 window.Chat = Chat;
 window.Channel = Channel;
-window.loadChatList = loadChatList; // لتتمكن من استدعائها من app.html
+window.loadChatList = loadChatList;
