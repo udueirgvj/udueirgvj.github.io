@@ -7,8 +7,6 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <!-- ملف البوتات المنفصل -->
-    <script src="bot.js"></script>
     <style>
         * {
             margin: 0;
@@ -715,21 +713,72 @@
             justify-content: center;
             font-size: 12px;
         }
+
+        /* واجهة الدردشة الفارغة - مثل تليجرام */
+        .empty-chat-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            background: #f9f9f9;
+            padding: 20px;
+        }
+        .empty-chat-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: #667eea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 48px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .empty-chat-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .empty-chat-status {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .empty-chat-message {
+            text-align: center;
+            color: #999;
+            font-size: 16px;
+            line-height: 1.6;
+            max-width: 300px;
+        }
+        .empty-chat-message small {
+            display: block;
+            margin-top: 8px;
+            font-size: 14px;
+            color: #ccc;
+        }
     </style>
 </head>
 <body>
     <div id="app">
+        <!-- الشريط العلوي -->
         <div class="top-bar">
             <div class="menu-icon" onclick="UI.toggleDrawer()">☰</div>
             <div class="app-name">تلرفيب</div>
             <div class="search-icon" onclick="UI.toggleSearch()">🔍</div>
         </div>
 
+        <!-- شريط البحث العام -->
         <div id="searchBar" class="search-bar">
             <input type="text" id="searchInput" placeholder="ابحث عن مستخدم، قناة، أو مجموعة..." onkeyup="Search.handle()">
             <div id="searchResults" class="search-results"></div>
         </div>
 
+        <!-- القائمة الجانبية -->
         <div id="drawerOverlay" class="drawer-overlay" onclick="UI.closeDrawer()"></div>
         <div id="drawer" class="drawer">
             <div class="drawer-header">
@@ -746,7 +795,10 @@
             <div class="drawer-menu-item" onclick="Support.openSupportPanel()" id="supportMenuItem" style="display:none;">🎧 لوحة الدعم</div>
             <div class="drawer-menu-item" onclick="Auth.logout()">🚪 تسجيل خروج</div>
         </div>
-            <div id="mainContent" class="main-content">
+
+            <!-- المحتوى الرئيسي -->
+    <div id="mainContent" class="main-content">
+        <!-- قناة المطور (ثابتة) -->
         <div class="channel-card" onclick="Channel.open()">
             <div class="channel-icon">📢</div>
             <div class="channel-text">
@@ -756,11 +808,14 @@
             <div style="background:rgba(255,255,255,0.2); padding:4px 12px; border-radius:20px;">700K+</div>
         </div>
 
+        <!-- قائمة المحادثات -->
         <div id="chatListContainer" class="chat-list"></div>
     </div>
 
+    <!-- زر الإضافة العائم -->
     <div class="fab" onclick="UI.openCreateModal()">+</div>
 
+    <!-- نافذة إنشاء مجموعة/قناة -->
     <div id="createModal" class="modal">
         <div class="modal-header">
             <div class="back-btn" onclick="UI.closeCreateModal()">←</div>
@@ -778,6 +833,7 @@
         </div>
     </div>
 
+    <!-- نافذة قائمة العدادات المنبثقة -->
     <div id="countersMenu">
         <div class="modal-header" style="background: #667eea;">
             <div class="back-btn" onclick="UI.closeCountersMenu()">←</div>
@@ -794,6 +850,7 @@
         </div>
     </div>
 
+    <!-- نافذة الملف الشخصي -->
     <div id="profileModal">
         <div class="modal-header" style="background: #667eea;">
             <div class="back-btn" onclick="UI.closeProfile()">←</div>
@@ -802,6 +859,7 @@
         <div class="profile-content" id="profileContent"></div>
     </div>
 
+    <!-- نافذة إعادة التوجيه -->
     <div id="forwardModal">
         <div class="modal-header" style="background: #667eea;">
             <div class="back-btn" onclick="UI.closeForwardModal()">←</div>
@@ -810,6 +868,7 @@
         <div class="forward-list" id="forwardList"></div>
     </div>
 
+    <!-- لوحة تحكم الدعم -->
     <div id="supportPanel">
         <div class="support-header">
             <div class="back-btn" onclick="Support.closeSupportPanel()">←</div>
@@ -820,6 +879,7 @@
         </div>
     </div>
 
+    <!-- غرفة الدردشة -->
     <div id="chatRoom" class="chat-room">
         <div class="chat-header" onclick="UI.openProfileFromChat()">
             <div class="back-btn" onclick="event.stopPropagation(); Chat.close()">←</div>
@@ -848,724 +908,285 @@
     </div>
 </div>
 
-<script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyDRCtfuYrEdnuKUsWu_79N0",
-        authDomain: "tttrt-b8c5a.firebaseapp.com",
-        databaseURL: "https://tttrt-b8c5a-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "tttrt-b8c5a",
-        storageBucket: "tttrt-b8c5a.appspot.com",
-        messagingSenderId: "975123752593",
-        appId: "1:975123752593:web:e591e930af101968875560"
-    };
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+<!-- استيراد ملفات JavaScript المنفصلة -->
+<script src="firebase-config.js"></script>
+<script src="bot.js"></script>
+<script src="support.js"></script>
+<script src="groups.js"></script>
+<script src="chat.js"></script>
+    <script>
+        // -------------------- المتغيرات العامة --------------------
+        let currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (!currentUser) window.location.href = 'index.html';
 
-    let currentUser = JSON.parse(localStorage.getItem('currentUser'));
-    if (!currentUser) window.location.href = 'index.html';
-
-    const userStatusRef = db.ref(`/status/${currentUser.uid}`);
-    const connectedRef = db.ref('.info/connected');
-    connectedRef.on('value', (snap) => {
-        if (snap.val() === true) {
-            userStatusRef.set({ state: 'online', lastSeen: Date.now() });
-            userStatusRef.onDisconnect().set({ state: 'offline', lastSeen: Date.now() });
-        }
-    });
-
-    const SUPPORT_USERNAME = 'volunteer support';
-    const SUPPORT_UID = 'support_team';
-
-    async function checkIfSupport() {
-        const isSupport = currentUser.username === SUPPORT_USERNAME || currentUser.uid === SUPPORT_UID;
-        if (isSupport) {
-            document.getElementById('supportMenuItem').style.display = 'flex';
-            await db.ref('support/staff').child(currentUser.uid).set({
-                username: currentUser.username,
-                fullName: currentUser.fullName,
-                active: true,
-                lastSeen: Date.now()
-            });
-        }
-        return isSupport;
-    }
-
-    const UI = {
-        toggleDrawer() {
-            document.getElementById('drawer').classList.toggle('open');
-            document.getElementById('drawerOverlay').classList.toggle('open');
-        },
-        closeDrawer() {
-            document.getElementById('drawer').classList.remove('open');
-            document.getElementById('drawerOverlay').classList.remove('open');
-        },
-        toggleSearch() {
-            const sb = document.getElementById('searchBar');
-            sb.classList.toggle('show');
-            if (sb.classList.contains('show')) document.getElementById('searchInput').focus();
-            else document.getElementById('searchResults').classList.remove('show');
-        },
-        openCreateModal() {
-            document.getElementById('createModal').classList.add('open');
-        },
-        closeCreateModal() {
-            document.getElementById('createModal').classList.remove('open');
-            document.getElementById('createName').value = '';
-            document.getElementById('createUsername').value = '';
-            document.getElementById('createError').innerText = '';
-        },
-        openCountersMenu() {
-            document.getElementById('countersMenu').classList.add('open');
-        },
-        closeCountersMenu() {
-            document.getElementById('countersMenu').classList.remove('open');
-        },
-        countersAction(action) {
-            alert(`قيد التطوير: ${action}`);
-            this.closeCountersMenu();
-        },
-        showSettings(type) {
-            if (type === 'counters') this.openCountersMenu();
-            else alert(`إعدادات ${type} - قيد التطوير`);
-            this.closeDrawer();
-        },
-        updateDrawerInfo() {
-            document.getElementById('drawerFullName').innerText = currentUser.fullName;
-            document.getElementById('drawerUsername').innerText = '@' + currentUser.username;
-            const avatarDiv = document.getElementById('drawerAvatar');
-            if (currentUser.photoURL) avatarDiv.innerHTML = `<img src="${currentUser.photoURL}" alt="avatar">`;
-            else avatarDiv.innerHTML = '👤';
-        },
-        changePhoto() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            input.onchange = async (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = async (event) => {
-                        const photoURL = event.target.result;
-                        currentUser.photoURL = photoURL;
-                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                        await db.ref(`users/${currentUser.uid}/photoURL`).set(photoURL);
-                        this.updateDrawerInfo();
-                        alert('تم تغيير الصورة بنجاح');
-                    };
-                    reader.readAsDataURL(file);
-                }
-            };
-            input.click();
-            this.closeDrawer();
-        },
-        editName() {
-            const newName = prompt('الاسم الجديد:', currentUser.fullName);
-            if (newName && newName.trim()) {
-                currentUser.fullName = newName.trim();
-                localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                db.ref(`users/${currentUser.uid}/fullName`).set(newName.trim());
-                this.updateDrawerInfo();
+        // -------------------- نظام الحضور (Presence) --------------------
+        const userStatusRef = db.ref(`/status/${currentUser.uid}`);
+        const connectedRef = db.ref('.info/connected');
+        connectedRef.on('value', (snap) => {
+            if (snap.val() === true) {
+                userStatusRef.set({ state: 'online', lastSeen: Date.now() });
+                userStatusRef.onDisconnect().set({ state: 'offline', lastSeen: Date.now() });
             }
-            this.closeDrawer();
-        },
-        editUsername() { alert('تغيير اسم المستخدم قيد التطوير'); this.closeDrawer(); },
-        toggleDarkMode() { document.body.classList.toggle('dark-mode'); this.closeDrawer(); },
-        
-        async showProfile(uid) {
-            const snap = await db.ref(`users/${uid}`).once('value');
-            const user = snap.val();
-            if (!user) return;
-            
-            const content = document.getElementById('profileContent');
-            content.innerHTML = `
-                <div class="profile-avatar" onclick="UI.changeProfilePhoto('${uid}')">
-                    ${user.photoURL ? `<img src="${user.photoURL}">` : '👤'}
-                </div>
-                <div class="profile-name">${user.fullName}</div>
-                <div class="profile-uid">📱 ${user.uid}</div>
-                <div class="profile-username">@${user.username}</div>
-                <div class="profile-bio">${user.bio || 'لا توجد نبذة'}</div>
-                ${uid !== currentUser.uid ? `<button class="profile-button" onclick="Chat.startPrivate('${uid}', '${user.username}', '${user.fullName}'); UI.closeProfile()">مراسلة</button>` : ''}
-            `;
-            document.getElementById('profileModal').classList.add('open');
-        },
-        
-        changeProfilePhoto(uid) {
-            if (uid !== currentUser.uid) return;
-            this.changePhoto();
-        },
-        
-        closeProfile() {
-            document.getElementById('profileModal').classList.remove('open');
-        },
-        
-        openProfileFromChat() {
-            if (Chat.currentChatType === 'private' && Chat.currentChatUser) {
-                this.showProfile(Chat.currentChatUser.uid);
-            }
-        },
-        
-        openForwardModal() {
-            this.loadForwardList();
-            document.getElementById('forwardModal').classList.add('open');
-        },
-        
-        closeForwardModal() {
-            document.getElementById('forwardModal').classList.remove('open');
-        },
-        
-        async loadForwardList() {
-            const list = document.getElementById('forwardList');
-            list.innerHTML = '<div style="padding:20px; text-align:center;">جاري التحميل...</div>';
-            
-            const conversations = [];
-            const msgsSnap = await db.ref('messages').once('value');
-            msgsSnap.forEach(chatSnap => {
-                const msgs = chatSnap.val();
-                Object.values(msgs).forEach(msg => {
-                    if (msg.senderId === currentUser.uid || msg.receiverId === currentUser.uid) {
-                        const otherId = msg.senderId === currentUser.uid ? msg.receiverId : msg.senderId;
-                        if (!conversations.find(c => c.id === otherId)) {
-                            conversations.push({ id: otherId, type: 'user' });
-                        }
-                    }
+        });
+
+        const SUPPORT_USERNAME = 'volunteer support';
+        const SUPPORT_UID = 'support_team';
+
+        // -------------------- دالة التحقق من الدعم --------------------
+        async function checkIfSupport() {
+            const isSupport = currentUser.username === SUPPORT_USERNAME || currentUser.uid === SUPPORT_UID;
+            if (isSupport) {
+                document.getElementById('supportMenuItem').style.display = 'flex';
+                await db.ref('support/staff').child(currentUser.uid).set({
+                    username: currentUser.username,
+                    fullName: currentUser.fullName,
+                    active: true,
+                    lastSeen: Date.now()
                 });
-            });
-            
-            let html = '';
-            for (let conv of conversations.slice(0, 20)) {
-                const userSnap = await db.ref('users').orderByChild('uid').equalTo(conv.id).once('value');
-                if (userSnap.exists()) {
-                    let user;
-                    userSnap.forEach(u => user = u.val());
-                    html += `<div class="forward-item" onclick="Chat.forwardMessageTo('${user.uid}', '${user.username}', '${user.fullName}')">
-                        <div class="chat-avatar">${user.fullName.charAt(0)}</div>
-                        <div><strong>${user.fullName}</strong><br><span style="color:#666;">@${user.username}</span></div>
-                    </div>`;
-                }
             }
-            
-            list.innerHTML = html || '<div style="padding:20px; text-align:center;">لا توجد محادثات</div>';
+            return isSupport;
         }
-    };
 
-    const Auth = {
-        logout() {
-            userStatusRef.remove();
-            localStorage.removeItem('currentUser');
-            window.location.href = 'index.html';
+        // -------------------- دالة linkify (تحويل @username إلى رابط) --------------------
+        function linkify(text) {
+            return text.replace(/@(\w+)/g, '<a href="#" onclick="event.preventDefault(); Chat.startPrivateByUsername(\'$1\'); return false;">@$1</a>');
         }
-    };
+        window.linkify = linkify;
 
-    const Search = {
-        async handle() {
-            const query = document.getElementById('searchInput').value.trim().toLowerCase();
-            const resultsDiv = document.getElementById('searchResults');
-            if (query.length < 2) {
-                resultsDiv.classList.remove('show');
-                return;
-            }
-            let html = '';
-
-            if ('volunteer support'.includes(query) || 'volunteer'.includes(query) || 'support'.includes(query)) {
-                html += `<div class="search-result-item" onclick="Support.startSupportChat()">
-                    <div class="chat-avatar" style="background:#4caf50;">🎧</div>
-                    <div><strong>فريق الدعم</strong> <span class="support-badge">دعم</span><br><span style="color:#666;">@volunteer support</span></div>
-                </div>`;
-            }
-
-            const usersSnap = await db.ref('users').once('value');
-            usersSnap.forEach(child => {
-                const u = child.val();
-                if (u.username && u.username.toLowerCase().includes(query) && u.uid !== currentUser.uid && u.username !== SUPPORT_USERNAME) {
-                    html += `<div class="search-result-item" onclick="Chat.startPrivate('${u.uid}', '${u.username}', '${u.fullName}')">
-                        <div class="chat-avatar">${u.fullName.charAt(0)}</div>
-                        <div><strong>${u.fullName}</strong><br><span style="color:#666;">@${u.username}</span></div>
-                    </div>`;
-                }
-            });
-
-            if ('ttdbot'.includes(query)) {
-                html += `<div class="search-result-item" onclick="Chat.startPrivate('ttdbot', 'ttdbot', 'TTDBOT')">
-                    <div class="chat-avatar" style="background: #2196f3;">🤖</div>
-                    <div><strong>TTDBOT</strong> <span class="verified-badge">موثق</span><br><span style="color:#666;">@ttdbot</span></div>
-                </div>`;
-            }
-
-            if ('botmaker'.includes(query)) {
-                html += `<div class="search-result-item" onclick="Chat.startPrivate('botmaker', 'botmaker', 'BotMaker')">
-                    <div class="chat-avatar" style="background: #9c27b0;">🤖</div>
-                    <div><strong>BotMaker</strong> <span style="background:#9c27b0; color:white; padding:2px 6px; border-radius:12px;">صانع البوتات</span><br><span style="color:#666;">@botmaker</span></div>
-                </div>`;
-            }
-
-            const groupsSnap = await db.ref('groups').once('value');
-            groupsSnap.forEach(child => {
-                const g = child.val();
-                if ((g.name && g.name.toLowerCase().includes(query)) || (g.username && g.username.toLowerCase().includes(query))) {
-                    const typeLabel = g.type === 'channel' ? '📢 قناة' : '👥 مجموعة';
-                    html += `<div class="search-result-item" onclick="GroupsAndChannels.open('${g.id}')">
-                        <div class="chat-avatar" style="border-radius: ${g.type==='channel'?'8px':'50%'};">${g.type==='channel'?'📢':'👥'}</div>
-                        <div><strong>${g.name}</strong><br><span style="color:#666;">@${g.username} • ${typeLabel} • ${g.memberCount||0} عضو</span></div>
-                    </div>`;
-                }
-            });
-
-            resultsDiv.innerHTML = html || '<div style="padding:12px; color:#999;">لا توجد نتائج</div>';
-            resultsDiv.classList.add('show');
-        }
-    };
-            const Support = {}; // سيكون في ملف منفصل
-
-        const GroupsAndChannels = {
-            async create() {
-                const name = document.getElementById('createName').value.trim();
-                let username = document.getElementById('createUsername').value.trim().replace('@','');
-                const type = document.getElementById('createType').value;
-                const errorDiv = document.getElementById('createError');
-
-                if (!name || !username) {
-                    errorDiv.innerText = 'الرجاء إدخال الاسم واسم المستخدم';
-                    return;
-                }
-                if (!/^[A-Za-z][A-Za-z0-9_]{4,19}$/.test(username)) {
-                    errorDiv.innerText = 'اسم المستخدم: 5-20 حرف، يبدأ بحرف، إنجليزي وأرقام و_ فقط';
-                    return;
-                }
-
-                const check = await db.ref('usernames').child(username).once('value');
-                if (check.exists()) {
-                    errorDiv.innerText = 'اسم المستخدم مستخدم بالفعل';
-                    return;
-                }
-
-                const groupId = db.ref().push().key;
-                const groupData = {
-                    id: groupId,
-                    name,
-                    username,
-                    type,
-                    createdBy: currentUser.uid,
-                    createdAt: Date.now(),
-                    memberCount: 1,
+        // -------------------- كائن UI --------------------
+        const UI = {
+            toggleDrawer() {
+                document.getElementById('drawer').classList.toggle('open');
+                document.getElementById('drawerOverlay').classList.toggle('open');
+            },
+            closeDrawer() {
+                document.getElementById('drawer').classList.remove('open');
+                document.getElementById('drawerOverlay').classList.remove('open');
+            },
+            toggleSearch() {
+                const sb = document.getElementById('searchBar');
+                sb.classList.toggle('show');
+                if (sb.classList.contains('show')) document.getElementById('searchInput').focus();
+                else document.getElementById('searchResults').classList.remove('show');
+            },
+            openCreateModal() {
+                document.getElementById('createModal').classList.add('open');
+            },
+            closeCreateModal() {
+                document.getElementById('createModal').classList.remove('open');
+                document.getElementById('createName').value = '';
+                document.getElementById('createUsername').value = '';
+                document.getElementById('createError').innerText = '';
+            },
+            openCountersMenu() {
+                document.getElementById('countersMenu').classList.add('open');
+            },
+            closeCountersMenu() {
+                document.getElementById('countersMenu').classList.remove('open');
+            },
+            countersAction(action) {
+                alert(`قيد التطوير: ${action}`);
+                this.closeCountersMenu();
+            },
+            showSettings(type) {
+                if (type === 'counters') this.openCountersMenu();
+                else alert(`إعدادات ${type} - قيد التطوير`);
+                this.closeDrawer();
+            },
+            updateDrawerInfo() {
+                document.getElementById('drawerFullName').innerText = currentUser.fullName;
+                document.getElementById('drawerUsername').innerText = '@' + currentUser.username;
+                const avatarDiv = document.getElementById('drawerAvatar');
+                if (currentUser.photoURL) avatarDiv.innerHTML = `<img src="${currentUser.photoURL}" alt="avatar">`;
+                else avatarDiv.innerHTML = '👤';
+            },
+            changePhoto() {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = async (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = async (event) => {
+                            const photoURL = event.target.result;
+                            currentUser.photoURL = photoURL;
+                            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                            await db.ref(`users/${currentUser.uid}/photoURL`).set(photoURL);
+                            this.updateDrawerInfo();
+                            alert('تم تغيير الصورة بنجاح');
+                        };
+                        reader.readAsDataURL(file);
+                    }
                 };
-                await db.ref(`groups/${groupId}`).set(groupData);
-                await db.ref(`usernames/${username}`).set(groupId);
-                await db.ref(`groupMembers/${groupId}/${currentUser.uid}`).set({ role: 'owner', joinedAt: Date.now() });
-
-                UI.closeCreateModal();
-                this.open(groupId);
+                input.click();
+                this.closeDrawer();
             },
-
-            async open(groupId) {
-                const groupSnap = await db.ref(`groups/${groupId}`).once('value');
-                const group = groupSnap.val();
-                if (!group) return;
-                Chat.currentChat = { ...group, isGroup: true, id: groupId };
-                Chat.currentChatId = `group_${groupId}`;
-                Chat.currentChatType = group.type;
-                Chat.currentChatUser = null;
-                Chat.openChatUI(group.name, group.type === 'channel' ? '📢' : '👥', `${group.type==='channel'?'قناة':'مجموعة'} · ${group.memberCount} عضو`);
-
-                if (group.createdBy === currentUser.uid) {
-                    document.getElementById('chatAdminControls').style.display = 'block';
-                } else {
-                    document.getElementById('chatAdminControls').style.display = 'none';
+            editName() {
+                const newName = prompt('الاسم الجديد:', currentUser.fullName);
+                if (newName && newName.trim()) {
+                    currentUser.fullName = newName.trim();
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    db.ref(`users/${currentUser.uid}/fullName`).set(newName.trim());
+                    this.updateDrawerInfo();
                 }
-
-                Chat.loadGroupMessages(groupId);
+                this.closeDrawer();
             },
-
-            async join(groupId) {
-                const memberRef = db.ref(`groupMembers/${groupId}/${currentUser.uid}`);
-                const snap = await memberRef.once('value');
-                if (!snap.exists()) {
-                    await memberRef.set({ role: 'member', joinedAt: Date.now() });
-                    await db.ref(`groups/${groupId}/memberCount`).transaction(x => (x||0)+1);
-                }
-                this.open(groupId);
-            }
-        };
-
-        const Chat = {
-            currentChat: null,
-            currentChatId: null,
-            currentChatType: null,
-            currentChatUser: null,
-            currentGroupId: null,
-            messagesListener: null,
-            presenceListeners: {},
-            replyToMessage: null,
-            forwardMessage: null,
-
-            async startPrivate(uid, username, fullName) {
-                if (uid === 'ttdbot') {
-                    await TTDBOT.startConversation(this, currentUser, db, this.sendBotMessage.bind(this));
-                    return;
-                }
-                if (uid === 'botmaker') {
-                    await BotMaker.startConversation(this, currentUser, db, this.sendBotMessage.bind(this));
-                    return;
-                }
-
-                this.currentChatType = 'private';
-                this.currentChatUser = { uid, username, fullName };
-                const ids = [currentUser.uid, uid].sort();
-                this.currentChatId = `private_${ids[0]}_${ids[1]}`;
-                
-                const statusSnap = await db.ref(`status/${uid}`).once('value');
-                const status = statusSnap.val();
-                let statusText = '';
-                if (status && status.state === 'online') statusText = '🟢 متصل';
-                else {
-                    const lastSeen = status ? status.lastSeen : null;
-                    statusText = lastSeen ? `آخر ظهور ${this.timeAgo(lastSeen)}` : 'آخر ظهور غير معروف';
-                }
-
-                this.openChatUI(fullName, fullName.charAt(0), statusText);
-                this.loadPrivateMessages(uid);
-                
-                this.presenceListeners[uid] = db.ref(`status/${uid}`).on('value', (snap) => {
-                    const s = snap.val();
-                    if (s && s.state === 'online') document.getElementById('chatStatus').innerText = '🟢 متصل';
-                    else {
-                        const lastSeen = s ? s.lastSeen : null;
-                        document.getElementById('chatStatus').innerText = lastSeen ? `آخر ظهور ${this.timeAgo(lastSeen)}` : 'آخر ظهور غير معروف';
-                    }
-                });
-            },
-
-            timeAgo(timestamp) {
-                const seconds = Math.floor((Date.now() - timestamp) / 1000);
-                if (seconds < 60) return 'منذ لحظات';
-                const minutes = Math.floor(seconds / 60);
-                if (minutes < 60) return `منذ ${minutes} دقيقة`;
-                const hours = Math.floor(minutes / 60);
-                if (hours < 24) return `منذ ${hours} ساعة`;
-                const days = Math.floor(hours / 24);
-                return `منذ ${days} يوم`;
-            },
-
-            openChatUI(name, avatarChar, status) {
-                const nameSpan = document.getElementById('chatName');
-                if (name === 'TTDBOT') nameSpan.innerHTML = name + ' <span class="verified-badge">موثق</span>';
-                else if (name === 'BotMaker') nameSpan.innerHTML = name + ' <span style="background:#9c27b0; color:white; padding:2px 6px; border-radius:12px; font-size:10px;">صانع البوتات</span>';
-                else nameSpan.innerText = name;
-                document.getElementById('chatAvatar').innerText = avatarChar;
-                document.getElementById('chatStatus').innerText = status;
-                document.getElementById('chatRoom').classList.add('open');
-            },
-
-            close() {
-                document.getElementById('chatRoom').classList.remove('open');
-                if (this.messagesListener) this.messagesListener.off();
-                Object.keys(this.presenceListeners).forEach(uid => {
-                    db.ref(`status/${uid}`).off('value', this.presenceListeners[uid]);
-                });
-                this.presenceListeners = {};
-                this.messagesListener = null;
-                this.currentChat = null;
-                this.currentChatId = null;
-                this.currentChatUser = null;
-                this.currentGroupId = null;
-                this.replyToMessage = null;
-                this.forwardMessage = null;
-            },
-
-            loadPrivateMessages(otherUid) {
-                const messagesRef = db.ref(`messages/${this.currentChatId}`);
-                this.messagesListener = messagesRef.orderByChild('timestamp').on('value', (snap) => {
-                    this.displayMessages(snap);
-                });
-            },
-
-            loadGroupMessages(groupId) {
-                this.currentGroupId = groupId;
-                const messagesRef = db.ref(`groupMessages/${groupId}`);
-                this.messagesListener = messagesRef.orderByChild('timestamp').on('value', (snap) => {
-                    this.displayMessages(snap, true);
-                });
-            },
-
-            async displayMessages(snapshot, isGroup = false) {
-                const container = document.getElementById('messagesContainer');
-                container.innerHTML = '';
-                if (!snapshot.exists()) {
-                    container.innerHTML = '<div style="text-align:center;color:#999;padding:20px;">أرسل أول رسالة 👋</div>';
-                    return;
-                }
-                const messages = [];
-                snapshot.forEach(child => messages.push(child.val()));
-                messages.sort((a,b) => a.timestamp - b.timestamp);
-
-                for (let msg of messages) {
-                    const div = document.createElement('div');
-                    div.className = `message ${msg.senderId === currentUser.uid ? 'sent' : 'received'}`;
-                    div.setAttribute('onclick', `Chat.showMessageActions('${msg.messageId}', '${msg.text}')`);
-                    
-                    let senderHtml = '';
-                    if (isGroup && msg.senderId !== currentUser.uid) {
-                        const userSnap = await db.ref(`users/${msg.senderId}`).once('value');
-                        const user = userSnap.val();
-                        senderHtml = `<div class="sender-name">${user?.fullName || 'مستخدم'}</div>`;
-                    }
-                    
-                    let replyHtml = '';
-                    if (msg.replyTo) replyHtml = `<div class="reply-preview" onclick="event.stopPropagation()">↩️ ${msg.replyTo}</div>`;
-                    
-                    div.innerHTML = replyHtml + senderHtml + `<div>${msg.text}</div><div class="message-time">${new Date(msg.timestamp).toLocaleTimeString('ar', {hour:'2-digit',minute:'2-digit'})}</div>`;
-                    container.appendChild(div);
-                }
-                container.scrollTop = container.scrollHeight;
-            },
-
-            showMessageActions(messageId, text) {
-                const action = prompt('اختر:\n1️⃣ للرد على الرسالة\n2️⃣ لإعادة توجيه الرسالة\n3️⃣ للإشارة إلى عضو');
-                if (action === '1') this.setReplyTo(messageId, text);
-                else if (action === '2') {
-                    this.setForwardMessage(messageId, text);
-                    UI.openForwardModal();
-                } else if (action === '3') this.showMentionSuggestions();
-            },
-
-            setReplyTo(messageId, text) {
-                this.replyToMessage = { id: messageId, text };
-                document.getElementById('messageInput').placeholder = `الرد على: ${text.substring(0,20)}...`;
-            },
-
-            setForwardMessage(messageId, text) {
-                this.forwardMessage = { id: messageId, text };
-            },
-
-            async forwardMessageTo(uid, username, fullName) {
-                if (!this.forwardMessage) return;
-                
-                const ids = [currentUser.uid, uid].sort();
-                const chatId = `private_${ids[0]}_${ids[1]}`;
-                
-                const msg = {
-                    messageId: db.ref().push().key,
-                    senderId: currentUser.uid,
-                    receiverId: uid,
-                    text: `↪️ تمت إعادة توجيهها: ${this.forwardMessage.text}`,
-                    timestamp: Date.now(),
-                    forwarded: true
-                };
-                
-                await db.ref(`messages/${chatId}/${msg.messageId}`).set(msg);
-                UI.closeForwardModal();
-                this.forwardMessage = null;
-                alert('تم إعادة توجيه الرسالة بنجاح');
-            },
-
-            clearReply() {
-                this.replyToMessage = null;
-                document.getElementById('messageInput').placeholder = 'اكتب رسالة...';
-            },
-
-            async sendMessage() {
-                const input = document.getElementById('messageInput');
-                const text = input.value.trim();
-                if (!text || !this.currentChatId) return;
-
-                if (this.currentChatType === 'bot') {
-                    await TTDBOT.handleMessage(text, currentUser, db, this.sendBotMessage.bind(this));
-                    input.value = '';
-                    return;
-                }
-                if (this.currentChatType === 'botmaker') {
-                    await BotMaker.handleMessage(text, currentUser, db, this.sendBotMessage.bind(this));
-                    input.value = '';
-                    return;
-                }
-
-                if (this.currentChatType === 'private') {
-                    const msg = {
-                        messageId: db.ref().push().key,
-                        senderId: currentUser.uid,
-                        receiverId: this.currentChatUser.uid,
-                        text,
-                        timestamp: Date.now()
-                    };
-                    if (this.replyToMessage) msg.replyTo = this.replyToMessage.text;
-                    await db.ref(`messages/${this.currentChatId}/${msg.messageId}`).set(msg);
-                } else {
-                    const groupId = this.currentChatId.replace('group_','');
-                    const groupSnap = await db.ref(`groups/${groupId}`).once('value');
-                    const group = groupSnap.val();
-                    
-                    if (group.type === 'channel' && group.createdBy !== currentUser.uid) {
-                        alert('فقط المالك يمكنه النشر في القناة');
-                        input.value = '';
-                        return;
-                    }
-
-                    const msg = {
-                        messageId: db.ref().push().key,
-                        senderId: currentUser.uid,
-                        groupId,
-                        text,
-                        timestamp: Date.now()
-                    };
-                    if (this.replyToMessage) msg.replyTo = this.replyToMessage.text;
-                    await db.ref(`groupMessages/${groupId}/${msg.messageId}`).set(msg);
-                }
-                this.clearReply();
-                input.value = '';
-            },
-
-            async sendBotMessage(senderId, text) {
-                const botMsg = {
-                    messageId: db.ref().push().key,
-                    senderId: senderId,
-                    receiverId: currentUser.uid,
-                    text: text,
-                    timestamp: Date.now()
-                };
-                const path = senderId === 'ttdbot' ? `bot_${currentUser.uid}` : `botmaker_${currentUser.uid}`;
-                await db.ref(`messages/${path}/${botMsg.messageId}`).set(botMsg);
-
-                const container = document.getElementById('messagesContainer');
-                const div = document.createElement('div');
-                div.className = 'message received bot-message';
-                div.innerHTML = `<div>${text}</div><div class="message-time">${new Date().toLocaleTimeString('ar', {hour:'2-digit',minute:'2-digit'})}</div>`;
-                container.appendChild(div);
-                container.scrollTop = container.scrollHeight;
-            },
-
-            banUser() { alert('خاصية الحظر قيد التطوير'); },
-            showMentionSuggestions() { alert('خاصية الإشارة قيد التطوير'); },
-            insertMention(username) {},
-            toggleSearchInChat() {
-                const bar = document.getElementById('searchChatBar');
-                bar.style.display = bar.style.display === 'none' ? 'flex' : 'none';
-            },
-            async searchInChat() {
-                const query = document.getElementById('searchChatInput').value.trim().toLowerCase();
-                if (!query || !this.currentChatId) return;
-                alert('خاصية البحث داخل المحادثة قيد التطوير');
-            }
-        };
-
-        const Channel = {
-            open() { alert('قناة المطور: سيتم فتحها قريباً'); }
-        };
-
-        let chatListListener = null;
-
-        function loadChatList() {
-            if (chatListListener) chatListListener.off();
+            editUsername() { alert('تغيير اسم المستخدم قيد التطوير'); this.closeDrawer(); },
+            toggleDarkMode() { document.body.classList.toggle('dark-mode'); this.closeDrawer(); },
             
-            const conversations = new Map();
-            const uid = currentUser.uid;
-
-            chatListListener = db.ref('messages').on('value', async (snapshot) => {
-                conversations.clear();
-
-                snapshot.forEach(chatSnap => {
+            async showProfile(uid) {
+                const snap = await db.ref(`users/${uid}`).once('value');
+                const user = snap.val();
+                if (!user) return;
+                
+                const content = document.getElementById('profileContent');
+                content.innerHTML = `
+                    <div class="profile-avatar" onclick="UI.changeProfilePhoto('${uid}')">
+                        ${user.photoURL ? `<img src="${user.photoURL}">` : '👤'}
+                    </div>
+                    <div class="profile-name">${user.fullName}</div>
+                    <div class="profile-uid">📱 ${user.uid}</div>
+                    <div class="profile-username">@${user.username}</div>
+                    <div class="profile-bio">${user.bio || 'لا توجد نبذة'}</div>
+                    ${uid !== currentUser.uid ? `<button class="profile-button" onclick="Chat.startPrivate('${uid}', '${user.username}', '${user.fullName}'); UI.closeProfile()">مراسلة</button>` : ''}
+                `;
+                document.getElementById('profileModal').classList.add('open');
+            },
+            
+            changeProfilePhoto(uid) {
+                if (uid !== currentUser.uid) return;
+                this.changePhoto();
+            },
+            
+            closeProfile() {
+                document.getElementById('profileModal').classList.remove('open');
+            },
+            
+            openProfileFromChat() {
+                if (Chat.currentChatType === 'private' && Chat.currentChatUser) {
+                    this.showProfile(Chat.currentChatUser.uid);
+                }
+            },
+            
+            openForwardModal() {
+                this.loadForwardList();
+                document.getElementById('forwardModal').classList.add('open');
+            },
+            
+            closeForwardModal() {
+                document.getElementById('forwardModal').classList.remove('open');
+            },
+            
+            async loadForwardList() {
+                const list = document.getElementById('forwardList');
+                list.innerHTML = '<div style="padding:20px; text-align:center;">جاري التحميل...</div>';
+                
+                const conversations = [];
+                const msgsSnap = await db.ref('messages').once('value');
+                msgsSnap.forEach(chatSnap => {
                     const msgs = chatSnap.val();
-                    if (msgs && typeof msgs === 'object') {
-                        Object.values(msgs).forEach(msg => {
-                            if (msg.senderId === uid || msg.receiverId === uid) {
-                                const otherId = msg.senderId === uid ? msg.receiverId : msg.senderId;
-                                if (!conversations.has(otherId) || conversations.get(otherId).timestamp < msg.timestamp) {
-                                    conversations.set(otherId, {
-                                        id: otherId,
-                                        type: 'user',
-                                        lastMessage: msg.text,
-                                        timestamp: msg.timestamp
-                                    });
-                                }
+                    Object.values(msgs).forEach(msg => {
+                        if (msg.senderId === currentUser.uid || msg.receiverId === currentUser.uid) {
+                            const otherId = msg.senderId === currentUser.uid ? msg.receiverId : msg.senderId;
+                            if (!conversations.find(c => c.id === otherId)) {
+                                conversations.push({ id: otherId, type: 'user' });
                             }
-                        });
-                    }
-                });
-
-                const memberSnap = await db.ref('groupMembers').orderByChild('uid').equalTo(uid).once('value');
-                memberSnap.forEach(member => {
-                    const groupId = member.key;
-                    db.ref(`groupMessages/${groupId}`).orderByChild('timestamp').limitToLast(1).once('value', snap => {
-                        let lastMsg = 'أنشئت حديثاً', lastTime = Date.now();
-                        snap.forEach(m => { lastMsg = m.val().text; lastTime = m.val().timestamp; });
-                        conversations.set(`group_${groupId}`, {
-                            id: groupId,
-                            type: 'group',
-                            lastMessage: lastMsg,
-                            timestamp: lastTime
-                        });
-                        renderChatList(Array.from(conversations.values()));
+                        }
                     });
                 });
-
-                conversations.set('ttdbot', { id: 'ttdbot', type: 'bot', lastMessage: 'بوت إنشاء البوتات', timestamp: Date.now() });
-                conversations.set('botmaker', { id: 'botmaker', type: 'botmaker', lastMessage: 'صانع البوتات المتقدم', timestamp: Date.now() });
-
-                renderChatList(Array.from(conversations.values()));
-            });
-        }
-
-        async function renderChatList(list) {
-            const container = document.getElementById('chatListContainer');
-            container.innerHTML = '';
-            list.sort((a,b) => b.timestamp - a.timestamp);
-
-            for (let item of list) {
-                const div = document.createElement('div');
-                div.className = 'chat-list-item';
-
-                if (item.type === 'user') {
-                    const userSnap = await db.ref('users').orderByChild('uid').equalTo(item.id).once('value');
-                    if (!userSnap.exists()) continue;
-                    let user;
-                    userSnap.forEach(u => user = u.val());
-                    
-                    const statusSnap = await db.ref(`status/${user.uid}`).once('value');
-                    const status = statusSnap.val();
-                    const isOnline = status && status.state === 'online';
-                    
-                    div.innerHTML = `<div class="chat-avatar" style="position:relative;">
-                            ${user.photoURL ? `<img src="${user.photoURL}">` : user.fullName.charAt(0)}
-                            <span class="${isOnline ? 'online-indicator' : 'offline-indicator'}"></span>
-                        </div>
-                        <div class="chat-info">
-                            <div class="chat-name"><span>${user.fullName}</span><span class="chat-time">${new Date(item.timestamp).toLocaleTimeString('ar',{hour:'2-digit',minute:'2-digit'})}</span></div>
-                            <div class="chat-last-msg">${item.lastMessage}</div>
+                
+                let html = '';
+                for (let conv of conversations.slice(0, 20)) {
+                    const userSnap = await db.ref('users').orderByChild('uid').equalTo(conv.id).once('value');
+                    if (userSnap.exists()) {
+                        let user;
+                        userSnap.forEach(u => user = u.val());
+                        html += `<div class="forward-item" onclick="Chat.forwardMessageTo('${user.uid}', '${user.username}', '${user.fullName}')">
+                            <div class="chat-avatar">${user.fullName.charAt(0)}</div>
+                            <div><strong>${user.fullName}</strong><br><span style="color:#666;">@${user.username}</span></div>
                         </div>`;
-                    div.onclick = () => Chat.startPrivate(user.uid, user.username, user.fullName);
-                } else if (item.type === 'group') {
-                    const groupSnap = await db.ref(`groups/${item.id}`).once('value');
-                    const group = groupSnap.val();
-                    if (!group) continue;
-                    div.innerHTML = `<div class="chat-avatar" style="border-radius:${group.type==='channel'?'8px':'50%'};">${group.type==='channel'?'📢':'👥'}</div>
-                        <div class="chat-info">
-                            <div class="chat-name"><span>${group.name}</span><span class="chat-time">${new Date(item.timestamp).toLocaleTimeString('ar',{hour:'2-digit',minute:'2-digit'})}</span></div>
-                            <div class="chat-last-msg">${item.lastMessage}</div>
-                        </div>`;
-                    div.onclick = () => GroupsAndChannels.open(group.id);
-                } else if (item.type === 'bot') {
-                    div.innerHTML = `<div class="chat-avatar" style="background:#2196f3;">🤖</div>
-                        <div class="chat-info">
-                            <div class="chat-name"><span>TTDBOT <span class="verified-badge">موثق</span></span><span class="chat-time"></span></div>
-                            <div class="chat-last-msg">${item.lastMessage}</div>
-                        </div>`;
-                    div.onclick = () => Chat.startPrivate('ttdbot', 'ttdbot', 'TTDBOT');
-                } else if (item.type === 'botmaker') {
-                    div.innerHTML = `<div class="chat-avatar" style="background:#9c27b0;">🤖</div>
-                        <div class="chat-info">
-                            <div class="chat-name"><span>BotMaker <span style="background:#9c27b0; color:white; padding:2px 6px; border-radius:12px;">صانع البوتات</span></span><span class="chat-time"></span></div>
-                            <div class="chat-last-msg">${item.lastMessage}</div>
-                        </div>`;
-                    div.onclick = () => Chat.startPrivate('botmaker', 'botmaker', 'BotMaker');
+                    }
                 }
-                container.appendChild(div);
+                
+                list.innerHTML = html || '<div style="padding:20px; text-align:center;">لا توجد محادثات</div>';
             }
-            if (list.length === 0) container.innerHTML = '<div style="text-align:center;padding:30px;color:#999;">لا توجد محادثات بعد</div>';
-        }
+        };
 
+        // -------------------- كائن Auth (تسجيل خروج) --------------------
+        const Auth = {
+            logout() {
+                userStatusRef.remove();
+                localStorage.removeItem('currentUser');
+                window.location.href = 'index.html';
+            }
+        };
+
+        // -------------------- كائن Search (بحث شامل) --------------------
+        const Search = {
+            async handle() {
+                const query = document.getElementById('searchInput').value.trim().toLowerCase();
+                const resultsDiv = document.getElementById('searchResults');
+                if (query.length < 2) {
+                    resultsDiv.classList.remove('show');
+                    return;
+                }
+                let html = '';
+
+                if ('volunteer support'.includes(query) || 'volunteer'.includes(query) || 'support'.includes(query)) {
+                    html += `<div class="search-result-item" onclick="Support.startSupportChat()">
+                        <div class="chat-avatar" style="background:#4caf50;">🎧</div>
+                        <div><strong>فريق الدعم</strong> <span class="support-badge">دعم</span><br><span style="color:#666;">@volunteer support</span></div>
+                    </div>`;
+                }
+
+                const usersSnap = await db.ref('users').once('value');
+                usersSnap.forEach(child => {
+                    const u = child.val();
+                    if (u.username && u.username.toLowerCase().includes(query) && u.uid !== currentUser.uid && u.username !== SUPPORT_USERNAME) {
+                        html += `<div class="search-result-item" onclick="Chat.startPrivate('${u.uid}', '${u.username}', '${u.fullName}')">
+                            <div class="chat-avatar">${u.fullName.charAt(0)}</div>
+                            <div><strong>${u.fullName}</strong><br><span style="color:#666;">@${u.username}</span></div>
+                        </div>`;
+                    }
+                });
+
+                if ('ttdbot'.includes(query)) {
+                    html += `<div class="search-result-item" onclick="Chat.startPrivate('ttdbot', 'ttdbot', 'TTDBOT')">
+                        <div class="chat-avatar" style="background: #2196f3;">🤖</div>
+                        <div><strong>TTDBOT</strong> <span class="verified-badge">موثق</span><br><span style="color:#666;">@ttdbot</span></div>
+                    </div>`;
+                }
+
+                if ('botmaker'.includes(query)) {
+                    html += `<div class="search-result-item" onclick="Chat.startPrivate('botmaker', 'botmaker', 'BotMaker')">
+                        <div class="chat-avatar" style="background: #9c27b0;">🤖</div>
+                        <div><strong>BotMaker</strong> <span style="background:#9c27b0; color:white; padding:2px 6px; border-radius:12px;">صانع البوتات</span><br><span style="color:#666;">@botmaker</span></div>
+                    </div>`;
+                }
+
+                const groupsSnap = await db.ref('groups').once('value');
+                groupsSnap.forEach(child => {
+                    const g = child.val();
+                    if ((g.name && g.name.toLowerCase().includes(query)) || (g.username && g.username.toLowerCase().includes(query))) {
+                        const typeLabel = g.type === 'channel' ? '📢 قناة' : '👥 مجموعة';
+                        html += `<div class="search-result-item" onclick="GroupsAndChannels.open('${g.id}')">
+                            <div class="chat-avatar" style="border-radius: ${g.type==='channel'?'8px':'50%'};">${g.type==='channel'?'📢':'👥'}</div>
+                            <div><strong>${g.name}</strong><br><span style="color:#666;">@${g.username} • ${typeLabel} • ${g.memberCount||0} عضو</span></div>
+                        </div>`;
+                    }
+                });
+
+                resultsDiv.innerHTML = html || '<div style="padding:12px; color:#999;">لا توجد نتائج</div>';
+                resultsDiv.classList.add('show');
+            }
+        };
+
+        // -------------------- تهيئة التطبيق --------------------
         async function init() {
             UI.updateDrawerInfo();
-            await checkIfSupport(); // ستظل موجودة لكن Support سيكون فارغاً
-            loadChatList();
+            await checkIfSupport();
+            loadChatList(); // من chat.js
         }
         init();
     </script>
