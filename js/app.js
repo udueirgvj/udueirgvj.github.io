@@ -27,5 +27,8 @@ const UI = {
 
 const Auth = { logout() { localStorage.removeItem('currentUser'); window.location.href = 'index.html'; } };
 const Channel = { open() { alert('قناة المطور'); } };
+alert('✅ تم تحميل app.js بنجاح');
 
 UI.updateDrawerInfo();
+
+
