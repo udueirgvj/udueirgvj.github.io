@@ -4,9 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>تلرفيب - التطبيق</title>
-    <!-- تنسيقات CSS (يمكن نقلها لملف منفصل) -->
     <style>
-        /* التنسيقات الأساسية - يمكنك نسخها من الردود السابقة */
+        /* ========== التنسيقات الأساسية (مختصرة ولكن كاملة) ========== */
         * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', sans-serif; }
         body { background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); display:flex; justify-content:center; align-items:center; min-height:100vh; }
         #app { width:100%; max-width:500px; height:700px; background:white; border-radius:20px; box-shadow:0 10px 40px rgba(0,0,0,0.2); position:relative; overflow:hidden; display:flex; flex-direction:column; }
@@ -76,8 +75,38 @@
         .hidden { display:none !important; }
         .error { color:#e74c3c; font-size:13px; margin:5px 0; }
     </style>
-    <!-- استدعاء loader.js (يجب أن يكون في نفس المجلد) -->
-    <script src="loader.js"></script>
+    <!-- ===== كود تحميل الملفات (دمج loader.js) ===== -->
+    <script>
+        (function() {
+            const files = [
+                'js/firebase-config.js',
+                'js/auth.js',
+                'js/bots.js',
+                'js/support.js',
+                'js/groups.js',
+                'js/chat.js',
+                'js/app.js'
+            ];
+
+            function loadScript(index) {
+                if (index >= files.length) {
+                    console.log('✅ جميع الملفات حُمّلت');
+                    return;
+                }
+                const script = document.createElement('script');
+                script.src = files[index];
+                script.onload = () => {
+                    console.log(`✅ تم تحميل: ${files[index]}`);
+                    loadScript(index + 1);
+                };
+                script.onerror = () => {
+                    console.error(`❌ فشل تحميل: ${files[index]} (تأكد من وجوده في مجلد js/)`);
+                };
+                document.head.appendChild(script);
+            }
+            loadScript(0);
+        })();
+    </script>
 </head>
 <body>
     <div id="app">
