@@ -24,7 +24,7 @@
             <div id="searchResults" class="search-results"></div>
         </div>
 
-        <!-- القائمة الجانبية -->
+        <!-- القائمة الجانبية (تظهر عند الضغط على ☰) -->
         <div id="drawerOverlay" class="drawer-overlay" onclick="UI.closeDrawer()"></div>
         <div id="drawer" class="drawer">
             <div class="drawer-header">
@@ -58,10 +58,10 @@
             <div id="chatListContainer" class="chat-list"></div>
         </div>
 
-        <!-- زر الإضافة العائم -->
+        <!-- زر الإضافة العائم (لفتح نافذة إنشاء مجموعة/قناة) -->
         <div class="fab" onclick="UI.openCreateModal()">+</div>
 
-        <!-- نافذة إنشاء مجموعة/قناة -->
+        <!-- نافذة إنشاء مجموعة/قناة (مخفية افتراضياً) -->
         <div id="createModal" class="modal">
             <div class="modal-header">
                 <div class="back-btn" onclick="UI.closeCreateModal()">←</div>
@@ -79,8 +79,8 @@
             </div>
         </div>
 
-        <!-- نافذة قائمة العدادات المنبثقة -->
-        <div id="countersMenu">
+        <!-- نافذة قائمة العدادات المنبثقة (مخفية افتراضياً) -->
+        <div id="countersMenu" class="modal">
             <div class="modal-header" style="background: #667eea;">
                 <div class="back-btn" onclick="UI.closeCountersMenu()">←</div>
                 <div>📊 القائمة</div>
@@ -96,8 +96,8 @@
             </div>
         </div>
 
-        <!-- نافذة الملف الشخصي -->
-        <div id="profileModal">
+        <!-- نافذة الملف الشخصي (مخفية افتراضياً) -->
+        <div id="profileModal" class="modal">
             <div class="modal-header" style="background: #667eea;">
                 <div class="back-btn" onclick="UI.closeProfile()">←</div>
                 <div>الملف الشخصي</div>
@@ -105,8 +105,8 @@
             <div class="profile-content" id="profileContent"></div>
         </div>
 
-        <!-- نافذة إعادة التوجيه -->
-        <div id="forwardModal">
+        <!-- نافذة إعادة التوجيه (مخفية افتراضياً) -->
+        <div id="forwardModal" class="modal">
             <div class="modal-header" style="background: #667eea;">
                 <div class="back-btn" onclick="UI.closeForwardModal()">←</div>
                 <div>إعادة توجيه الرسالة إلى</div>
@@ -114,8 +114,8 @@
             <div class="forward-list" id="forwardList"></div>
         </div>
 
-        <!-- لوحة تحكم الدعم -->
-        <div id="supportPanel">
+        <!-- لوحة تحكم الدعم (مخفية افتراضياً) -->
+        <div id="supportPanel" class="modal">
             <div class="support-header">
                 <div class="back-btn" onclick="Support.closeSupportPanel()">←</div>
                 <div>🎧 لوحة تحكم الدعم</div>
@@ -125,7 +125,7 @@
             </div>
         </div>
 
-        <!-- غرفة الدردشة -->
+        <!-- غرفة الدردشة (مخفية افتراضياً) -->
         <div id="chatRoom" class="chat-room">
             <div class="chat-header" onclick="UI.openProfileFromChat()">
                 <div class="back-btn" onclick="event.stopPropagation(); Chat.close()">←</div>
@@ -155,34 +155,6 @@
     </div>
 </body>
 </html>
-// ===================================================
-// loader.js - تحميل جميع ملفات التطبيق بالترتيب
-// ===================================================
-
-// قائمة الملفات بالترتيب المطلوب
-const files = [
-    'js/firebase-config.js',
-    'js/auth.js',
-    'js/bots.js',
-    'js/support.js',
-    'js/groups.js',
-    'js/chat.js',
-    'js/app.js'
-];
-
-// دالة لتحميل ملف script بشكل متسلسل
-function loadScript(index) {
-    if (index >= files.length) return; // انتهى التحميل
-
-    const script = document.createElement('script');
-    script.src = files[index];
-    script.onload = () => loadScript(index + 1); // تحميل التالي بعد انتهاء الحالي
-    script.onerror = () => console.error('خطأ في تحميل الملف:', files[index]);
-    document.head.appendChild(script);
-}
-
-// بدء التحميل من أول ملف
-loadScript(0);
 // ===================================================
 // app.js - تهيئة التطبيق
 // ===================================================
