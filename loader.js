@@ -1,4 +1,3 @@
-// loader.js
 const files = [
     'js/firebase-config.js',
     'js/auth.js',
@@ -10,11 +9,19 @@ const files = [
 ];
 
 function loadScript(index) {
-    if (index >= files.length) return;
+    if (index >= files.length) {
+        console.log('✅ جميع الملفات حُمّلت');
+        return;
+    }
     const script = document.createElement('script');
     script.src = files[index];
-    script.onload = () => loadScript(index + 1);
-    script.onerror = () => console.error('خطأ في تحميل:', files[index]);
+    script.onload = () => {
+        console.log(`✅ تم تحميل: ${files[index]}`);
+        loadScript(index + 1);
+    };
+    script.onerror = () => {
+        console.error(`❌ فشل تحميل: ${files[index]} (تأكد من وجوده في js/)`);
+    };
     document.head.appendChild(script);
 }
 loadScript(0);
