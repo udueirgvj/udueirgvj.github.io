@@ -7,113 +7,88 @@
 
 <style>
 body{
-    margin:0;
-    font-family:Arial;
-    background:#0f172a;
-    color:white;
+  margin:0;
+  font-family:Arial;
+  background:#dcdcdc;
 }
 
 /* الشريط العلوي */
 .header{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    background:#1e293b;
-    padding:10px;
+  background:linear-gradient(45deg,#6d83f2,#6a5acd);
+  color:white;
+  padding:14px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
 }
 
-.menu-btn, .search-btn{
-    font-size:22px;
-    cursor:pointer;
+.icon{
+  font-size:22px;
+  cursor:pointer;
 }
 
-.app-title{
-    font-size:18px;
-    font-weight:bold;
+.title{
+  font-size:18px;
 }
 
-/* صندوق البحث */
-.search-box{
-    display:none;
-    padding:10px;
-    background:#020617;
+/* البحث */
+.searchBox{
+  display:none;
+  padding:10px;
+  background:white;
 }
 
-.search-box input{
-    width:100%;
-    padding:10px;
-    border-radius:8px;
-    border:none;
+.searchBox input{
+  width:100%;
+  padding:10px;
+  border-radius:10px;
+  border:1px solid #ccc;
 }
 
-/* قائمة الدردشة */
-.chat-list{
-    padding:10px;
+/* قائمة المستخدمين */
+.users{
+  padding:10px;
 }
 
-.chat{
-    padding:12px;
-    border-bottom:1px solid #1f2937;
-    cursor:pointer;
+.user{
+  background:linear-gradient(45deg,#6d83f2,#6a5acd);
+  color:white;
+  padding:15px;
+  border-radius:16px;
+  margin-bottom:10px;
 }
 
-.chat:hover{
-    background:#1e293b;
-}
-
-/* القائمة الجانبية */
-.side-menu{
-    position:fixed;
-    top:0;
-    right:-250px;
-    width:250px;
-    height:100%;
-    background:#020617;
-    transition:0.3s;
-    padding:15px;
-}
-
-.side-menu a{
-    display:block;
-    padding:10px;
-    color:white;
-    text-decoration:none;
-}
-
-.side-menu a:hover{
-    background:#1e293b;
+/* زر + */
+.addBtn{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  width:60px;
+  height:60px;
+  border-radius:50%;
+  background:#6d83f2;
+  color:white;
+  font-size:30px;
+  border:none;
 }
 </style>
 </head>
 
 <body>
 
-<!-- الشريط العلوي -->
 <div class="header">
-    <div class="menu-btn" onclick="openMenu()">☰</div>
-    <div class="app-title">تيلرفيب</div>
-    <div class="search-btn" onclick="toggleSearch()">🔍</div>
+  <div class="icon" onclick="toggleSearch()">🔍</div>
+  <div class="title">تيلرفيب</div>
+  <div class="icon">☰</div>
 </div>
 
-<!-- البحث -->
-<div class="search-box" id="searchBox">
-    <input type="text" placeholder="بحث...">
+<div class="searchBox" id="searchBox">
+  <input id="searchInput" placeholder="ابحث عن مستخدم..." oninput="searchUser()">
 </div>
 
-<!-- قائمة المحادثات -->
-<div class="chat-list">
-    <div class="chat">محادثة 1</div>
-    <div class="chat">محادثة 2</div>
-    <div class="chat">محادثة 3</div>
-</div>
+<div class="users" id="userList"></div>
 
-<!-- القائمة الجانبية -->
-<div class="side-menu" id="menu">
-    <h3>القائمة</h3>
-    <a href="#">الملف الشخصي</a>
-    <a href="#">الإعدادات</a>
-    <a href="#">تسجيل خروج</a>
-</div>
+<button class="addBtn">+</button>
 
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -121,44 +96,38 @@ body{
 
 <script>
 const firebaseConfig = {
-  apiKey: "YOUR_KEY",
-  authDomain: "YOUR_DOMAIN",
-  databaseURL: "YOUR_DB",
-  projectId: "YOUR_ID",
+  apiKey: "ضع_بياناتك",
+  authDomain: "ضع_بياناتك",
+  databaseURL: "ضع_بياناتك",
+  projectId: "ضع_بياناتك"
 };
 
 firebase.initializeApp(firebaseConfig);
 
-/* وظائف الأزرار */
+const db = firebase.database();
+
+/* فتح البحث */
 function toggleSearch(){
-    let box = document.getElementById("searchBox");
-    box.style.display = box.style.display === "block" ? "none" : "block";
+  let box = document.getElementById("searchBox");
+  box.style.display = box.style.display=="block"?"none":"block";
 }
 
-function openMenu(){
-    document.getElementById("menu").style.right = "0";
-}
-
-document.body.addEventListener("click", function(e){
-    if(!e.target.closest(".menu-btn") && !e.target.closest(".side-menu")){
-        document.getElementById("menu").style.right = "-250px";
+/* البحث في المستخدمين */
+function searchUser(){
+  let text = document.getElementById("searchInput").value.toLowerCase();
+  db.ref("users").once("value",snap=>{
+    let data = snap.val();
+    let html="";
+    for(let id in data){
+      let name = data[id].name.toLowerCase();
+      if(name.includes(text)){
+        html += `<div class="user">${data[id].name}</div>`;
+      }
     }
-});
+    document.getElementById("userList").innerHTML = html;
+  });
+}
 </script>
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
-<!-- ملفات التطبيق -->
-<script src="firebase-config.js"></script>
-<script src="auth.js"></script>
-<script src="chat.js"></script>
-<script src="groups.js"></script>
-<script src="support.js"></script>
-<script src="bots.js"></script>
-<script src="app.js"></script>
-<script src="loader.js"></script>
 </body>
 </html>
-
