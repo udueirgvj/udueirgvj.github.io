@@ -1,8 +1,4 @@
-// ===================================================
-// loader.js - تحميل جميع ملفات التطبيق بالترتيب
-// ===================================================
-
-// قائمة الملفات بالترتيب المطلوب
+// loader.js - تحميل الملفات بالتسلسل
 const files = [
     'js/firebase-config.js',
     'js/auth.js',
@@ -13,16 +9,12 @@ const files = [
     'js/app.js'
 ];
 
-// دالة لتحميل ملف script بشكل متسلسل
 function loadScript(index) {
-    if (index >= files.length) return; // انتهى التحميل
-
+    if (index >= files.length) return;
     const script = document.createElement('script');
     script.src = files[index];
-    script.onload = () => loadScript(index + 1); // تحميل التالي بعد انتهاء الحالي
-    script.onerror = () => console.error('خطأ في تحميل الملف:', files[index]);
+    script.onload = () => loadScript(index + 1);
+    script.onerror = () => console.error('خطأ في تحميل:', files[index]);
     document.head.appendChild(script);
 }
-
-// بدء التحميل من أول ملف
 loadScript(0);
