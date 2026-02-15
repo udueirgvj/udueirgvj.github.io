@@ -4,76 +4,40 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>تيلرفيب</title>
-
 <style>
-body{
-  margin:0;
-  font-family:Arial;
-  background:#dcdcdc;
-}
+body{margin:0;font-family:Arial;background:#f0f2f5}
 
 /* الشريط العلوي */
-.header{
-  background:linear-gradient(45deg,#6d83f2,#6a5acd);
-  color:white;
-  padding:14px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-
-.icon{
-  font-size:22px;
-  cursor:pointer;
-}
-
-.title{
-  font-size:18px;
-}
+.header{background:linear-gradient(45deg,#6d83f2,#6a5acd);color:white;padding:14px;display:flex;justify-content:space-between;align-items:center}
+.icon{font-size:22px;cursor:pointer}
+.title{font-size:18px}
 
 /* البحث */
-.searchBox{
-  display:none;
-  padding:10px;
-  background:white;
-}
-
-.searchBox input{
-  width:100%;
-  padding:10px;
-  border-radius:10px;
-  border:1px solid #ccc;
-}
+.searchBox{display:none;padding:10px;background:white}
+.searchBox input{width:100%;padding:10px;border-radius:10px;border:1px solid #ccc}
 
 /* قائمة المستخدمين */
-.users{
-  padding:10px;
-}
+.users{padding:10px}
+.user{background:linear-gradient(45deg,#6d83f2,#6a5acd);color:white;padding:15px;border-radius:16px;margin-bottom:10px;cursor:pointer}
+.user:hover{opacity:0.9}
 
-.user{
-  background:linear-gradient(45deg,#6d83f2,#6a5acd);
-  color:white;
-  padding:15px;
-  border-radius:16px;
-  margin-bottom:10px;
-}
+/* قائمة المجموعات والقنوات */
+.group,.channel{padding:14px;background:#6a5acd;color:white;margin:10px;border-radius:16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+.group:hover,.channel:hover{opacity:0.9}
 
-/* زر + */
-.addBtn{
-  position:fixed;
-  bottom:20px;
-  right:20px;
-  width:60px;
-  height:60px;
-  border-radius:50%;
-  background:#6d83f2;
-  color:white;
-  font-size:30px;
-  border:none;
-}
+/* المحادثة */
+.chatBox{flex:1;padding:10px;overflow-y:auto;display:flex;flex-direction:column}
+.message{padding:8px 12px;border-radius:16px;margin:6px 0;max-width:70%;display:inline-block}
+.sender{background:#6d83f2;color:white;align-self:flex-end}
+.receiver{background:#e4e6eb;color:black;align-self:flex-start}
+.inputArea{display:flex;padding:10px;background:white}
+.inputArea input{flex:1;padding:10px;border-radius:20px;border:1px solid #ccc}
+.inputArea button{margin-left:6px;padding:10px 14px;border:none;background:#6d83f2;color:white;border-radius:50%;cursor:pointer}
+
+/* زر الإضافة */
+.addBtn{position:fixed;bottom:20px;right:20px;width:60px;height:60px;border-radius:50%;background:#6d83f2;color:white;font-size:30px;border:none}
 </style>
 </head>
-
 <body>
 
 <div class="header">
@@ -86,47 +50,159 @@ body{
   <input id="searchInput" placeholder="ابحث عن مستخدم..." oninput="searchUser()">
 </div>
 
-<div class="users" id="userList"></div>
+<div id="mainContent">
+  <div class="users" id="userList"></div>
+</div>
 
-<button class="addBtn">+</button>
+<button class="addBtn" onclick="createGroup()">+</button>
 
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
+// إعداد Firebase
 const firebaseConfig = {
   apiKey: "ضع_بياناتك",
   authDomain: "ضع_بياناتك",
   databaseURL: "ضع_بياناتك",
   projectId: "ضع_بياناتك"
 };
-
 firebase.initializeApp(firebaseConfig);
-
 const db = firebase.database();
 
-/* فتح البحث */
+// بيانات المستخدم الحالي مؤقت
+const currentUser="user1";
+
+// =================== البحث في المستخدمين ===================
 function toggleSearch(){
-  let box = document.getElementById("searchBox");
-  box.style.display = box.style.display=="block"?"none":"block";
+  let box=document.getElementById("searchBox");
+  box.style.display=box.style.display=="block"?"none":"block";
 }
 
-/* البحث في المستخدمين */
 function searchUser(){
-  let text = document.getElementById("searchInput").value.toLowerCase();
+  let text=document.getElementById("searchInput").value.toLowerCase();
   db.ref("users").once("value",snap=>{
-    let data = snap.val();
-    let html="";
+    let data=snap.val(); let html="";
     for(let id in data){
-      let name = data[id].name.toLowerCase();
+      let name=data[id].name.toLowerCase();
       if(name.includes(text)){
-        html += `<div class="user">${data[id].name}</div>`;
+        html+=`<div class="user" onclick="openChat('${id}')">${data[id].name}</div>`;
       }
     }
-    document.getElementById("userList").innerHTML = html;
+    document.getElementById("userList").innerHTML=html;
   });
 }
+
+// فتح محادثة فردية
+function openChat(userId){
+  localStorage.setItem("chatWith",userId);
+  renderChatPage();
+}
+
+// =================== إنشاء مجموعات ===================
+function createGroup(){
+  let name=prompt("ادخل اسم المجموعة:");
+  if(name) db.ref("groups").push({name, members: [currentUser]});
+}
+
+// تحميل المجموعات
+function loadGroups(){
+  db.ref("groups").on("value",snap=>{
+    let data=snap.val(); let html="";
+    for(let id in data){
+      html+=`<div class="group" onclick="openGroup('${id}')">${data[id].name}</div>`;
+    }
+    document.getElementById("mainContent").innerHTML=html;
+  });
+}
+
+// فتح مجموعة
+function openGroup(groupId){
+  localStorage.setItem("groupId",groupId);
+  renderGroupChatPage();
+}
+
+// =================== القنوات ===================
+function loadChannels(){
+  db.ref("channels").on("value",snap=>{
+    let data=snap.val(); let html="";
+    for(let id in data){
+      html+=`<div class="channel" onclick="openChannel('${id}')">${data[id].name} <span>${data[id].subscribers||0} مشترك</span></div>`;
+    }
+    document.getElementById("mainContent").innerHTML=html;
+  });
+}
+
+// فتح قناة
+function openChannel(channelId){
+  localStorage.setItem("channelId",channelId);
+  renderChannelPage();
+}
+
+// =================== المحادثة الفردية ===================
+function renderChatPage(){
+  document.getElementById("mainContent").innerHTML=`
+    <div class="chatBox" id="chatBox"></div>
+    <div class="inputArea">
+      <input id="msgInput" placeholder="اكتب رسالة..." onkeypress="if(event.key==='Enter'){sendMessage();}">
+      <button onclick="sendMessage()">➤</button>
+    </div>
+  `;
+  loadMessages();
+}
+
+function getChatId(){
+  const chatWith=localStorage.getItem("chatWith");
+  return currentUser<chatWith?currentUser+"_"+chatWith:chatWith+"_"+currentUser;
+}
+
+function loadMessages(){
+  db.ref("chats/"+getChatId()).on("value",snap=>{
+    let data=snap.val(); let html="";
+    for(let id in data){
+      let cls=data[id].sender===currentUser?"sender":"receiver";
+      html+=`<div class="message ${cls}">${data[id].text}</div>`;
+    }
+    document.getElementById("chatBox").innerHTML=html;
+    document.getElementById("chatBox").scrollTop=document.getElementById("chatBox").scrollHeight;
+  });
+}
+
+function sendMessage(){
+  let input=document.getElementById("msgInput");
+  let text=input.value.trim(); if(text==="") return;
+  db.ref("chats/"+getChatId()).push({sender:currentUser,text});
+  input.value="";
+}
+
+// =================== بوتات بسيطة ===================
+function createBot(name,commands){
+  db.ref("bots").push({name,commands});
+}
+
+function handleBot(message){
+  db.ref("bots").once("value",snap=>{
+    let bots=snap.val();
+    for(let id in bots){
+      let bot=bots[id];
+      bot.commands.forEach(cmd=>{
+        if(message===cmd.trigger){
+          alert("بوت "+bot.name+" : "+cmd.response);
+        }
+      });
+    }
+  });
+}
+
+// تحميل المستخدمين في البداية
+db.ref("users").once("value",snap=>{
+  let data=snap.val(); let html="";
+  for(let id in data){
+    if(id!==currentUser) html+=`<div class="user" onclick="openChat('${id}')">${data[id].name}</div>`;
+  }
+  document.getElementById("userList").innerHTML=html;
+});
 </script>
 
 </body>
