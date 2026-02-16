@@ -4,101 +4,23 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Clipn</title>
-
-<link rel="stylesheet" href="style.css">
-
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-<script src="firebase.js"></script>
-
 </head>
-<body>
+<body style="background:#071a2c;color:white;text-align:center;margin-top:80px;font-family:tahoma">
 
-<!-- ===== الشريط العلوي ===== -->
-<div class="topbar">
-    <div class="menuBtn" onclick="toggleSidebar()">☰</div>
-    <div class="logo">Clipn</div>
-    <div class="searchBtn" id="searchBtn">🔍</div>
-</div>
+<h1>مرحبا بك</h1>
+<h2 id="user"></h2>
 
-
-<!-- ===== القائمة الجانبية ===== -->
-<div id="sidebar" class="sidebar">
-
-    <h3 id="sideUsername">المستخدم</h3>
-
-    <div class="sideItem" onclick="toggleDark()">🌙 الوضع الليلي</div>
-    <div class="sideItem" onclick="changeName()">✏ تغيير الاسم</div>
-    <div class="sideItem" onclick="logout()">🚪 تسجيل الخروج</div>
-    <div class="sideItem">⚙️ الإعدادات</div>
-
-</div>
-
-
-<!-- ===== صندوق البحث ===== -->
-<div id="searchBox" class="searchBox">
-
-    <input id="searchInput" type="text" placeholder="ابحث عن @اسم_المستخدم">
-
-    <button onclick="closeSearch()">إغلاق</button>
-
-    <div id="results"></div>
-
-</div>
-
-
-<!-- ===== الصفحة الترحيبية ===== -->
-<div id="welcome" class="welcome">
-
-    <h2 id="welcomeText">👋 أهلاً</h2>
-    <p>اضغط 🔍 في الأعلى وابحث عن اسم مستخدم لبدء محادثة خاصة</p>
-
-</div>
-
-
-<!-- ===== صفحة المحادثة ===== -->
-<div id="chatPage" class="chatPage">
-
-    <div class="chatHeader">
-        <span id="chatUsername">@user</span>
-    </div>
-
-    <div id="messages" class="messages"></div>
-
-    <div class="sendBox">
-        <input id="messageInput" placeholder="اكتب رسالة...">
-        <button onclick="sendMessage()">إرسال</button>
-    </div>
-
-</div>
-
-
-
-<!-- ملفات الجافاسكربت -->
-<script src="app.js"></script>
-<script src="search.js"></script>
-
+<button onclick="logout()">تسجيل الخروج</button>
 
 <script>
+let user=localStorage.getItem("chatUser");
+if(!user){location.href="../login.html";}
+document.getElementById("user").innerText=user;
 
-/* حماية الصفحة (اذا لم يسجل دخول يرجع للوجن) */
-const user = localStorage.getItem("chatUser");
-const uid  = localStorage.getItem("chatUID");
-
-if(!user || !uid){
-    location.href = "../login.html";
+function logout(){
+localStorage.clear();
+location.href="../login.html";
 }
-
-/* اظهار الاسم */
-document.getElementById("welcomeText").innerText = "👋 أهلاً " + user;
-document.getElementById("sideUsername").innerText = "@" + user;
-
-/* القائمة الجانبية */
-function toggleSidebar(){
-    document.getElementById("sidebar").classList.toggle("open");
-}
-
 </script>
 
 </body>
