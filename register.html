@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إنشاء حساب</title>
+
+<style>
+body{
+background:linear-gradient(135deg,#0f172a,#020617);
+font-family:Tahoma;
+color:white;
+margin:0;
+}
+
+.box{
+max-width:380px;
+margin:40px auto;
+background:#111827;
+padding:20px;
+border-radius:15px;
+}
+
+h2{text-align:center}
+
+input{
+width:100%;
+padding:12px;
+margin:8px 0;
+border:none;
+border-radius:10px;
+background:#1f2937;
+color:white;
+}
+
+button{
+width:100%;
+padding:12px;
+border:none;
+border-radius:12px;
+background:#22c55e;
+color:white;
+font-size:16px;
+}
+
+a{color:#22c55e;text-decoration:none}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+<h2>إنشاء حساب</h2>
+
+<input id="name" placeholder="الاسم الشخصي">
+<input id="username" placeholder="اسم المستخدم (5 احرف على الأقل)">
+<input id="email" type="email" placeholder="البريد الإلكتروني">
+<input id="password" type="password" placeholder="كلمة المرور">
+
+<button onclick="register()">إنشاء الحساب</button>
+<br><br>
+<center><a href="login.html">لديك حساب؟ تسجيل الدخول</a></center>
+<p id="msg"></p>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDRCtfuYrEdnuKUsWu_79N0",
+  authDomain: "tttrt-b8c5a.firebaseapp.com",
+  databaseURL: "https://tttrt-b8c5a-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "tttrt-b8c5a",
+  storageBucket: "tttrt-b8c5a.appspot.com",
+  messagingSenderId: "975123752593",
+  appId: "1:975123752593:web:e591e930af101968875560"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db=firebase.database();
+
+function register(){
+
+let name=document.getElementById("name").value;
+let username=document.getElementById("username").value.toLowerCase();
+let email=document.getElementById("email").value;
+let password=document.getElementById("password").value;
+let msg=document.getElementById("msg");
+
+if(username.length<5){
+msg.innerHTML="اسم المستخدم يجب ان يكون 5 احرف على الأقل";
+return;
+}
+
+db.ref("users/"+username).once("value",snap=>{
+if(snap.exists()){
+msg.innerHTML="اسم المستخدم مستخدم بالفعل!";
+return;
+}
+
+db.ref("users/"+username).set({
+name:name,
+username:username,
+email:email,
+password:password
+}).then(()=>{
+msg.innerHTML="تم إنشاء الحساب ✔";
+setTimeout(()=>{
+window.location="login.html";
+},1500);
+});
+
+});
+}
+</script>
+
+</body>
+</html>
