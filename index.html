@@ -139,11 +139,17 @@ function sendMessage(e){
     input.value="";
 }
 
-/* استقبال الرسائل */
+/* استقبال الرسائل مع تجاهل الرسائل التالفة */
 const messagesDiv=document.getElementById("messages");
 
 db.ref("messages").on("child_added", function(snapshot){
-    const m=snapshot.val();
+
+    const m = snapshot.val();
+
+    // تجاهل أي رسالة ناقصة (هي التي كانت تظهر undefined)
+    if(!m || !m.user || !m.text || !m.time){
+        return;
+    }
 
     let div=document.createElement("div");
     div.className="msg";
