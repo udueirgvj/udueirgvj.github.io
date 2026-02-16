@@ -8,80 +8,98 @@
 <link rel="stylesheet" href="style.css">
 
 <!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <script src="firebase.js"></script>
 
 </head>
-
 <body>
 
-<!-- القائمة الجانبية -->
+<!-- ===== الشريط العلوي ===== -->
+<div class="topbar">
+    <div class="menuBtn" onclick="toggleSidebar()">☰</div>
+    <div class="logo">Clipn</div>
+    <div class="searchBtn" id="searchBtn">🔍</div>
+</div>
+
+
+<!-- ===== القائمة الجانبية ===== -->
 <div id="sidebar" class="sidebar">
 
-    <div class="sideHeader">
-        <h3 id="sideUser">المستخدم</h3>
-    </div>
+    <h3 id="sideUsername">المستخدم</h3>
 
-    <div class="sideItem" onclick="logoutUser()">
-        🚪 تسجيل الخروج
-    </div>
-
-</div>
-
-<div id="overlay" class="overlay" onclick="closeMenu()"></div>
-
-
-<!-- الشريط العلوي -->
-<div class="topbar">
-
-<div class="menu" onclick="openMenu()">☰</div>
-
-<div class="logo">Clipn</div>
-
-<div class="searchBtn" onclick="openSearch()">🔍</div>
+    <div class="sideItem" onclick="toggleDark()">🌙 الوضع الليلي</div>
+    <div class="sideItem" onclick="changeName()">✏ تغيير الاسم</div>
+    <div class="sideItem" onclick="logout()">🚪 تسجيل الخروج</div>
+    <div class="sideItem">⚙️ الإعدادات</div>
 
 </div>
 
 
-<!-- واجهة الترحيب -->
-<div id="welcome" class="welcome">
-
-<h2 id="welcomeName"></h2>
-<p>اضغط 🔍 في الأعلى وابحث عن اسم مستخدم لبدء محادثة خاصة</p>
-
-</div>
-
-
-<!-- نافذة البحث -->
+<!-- ===== صندوق البحث ===== -->
 <div id="searchBox" class="searchBox">
 
-<input id="searchInput" placeholder="ابحث عن اسم المستخدم">
+    <input id="searchInput" type="text" placeholder="ابحث عن @اسم_المستخدم">
 
-<div id="results"></div>
+    <button onclick="closeSearch()">إغلاق</button>
 
-<button onclick="closeSearch()">إغلاق</button>
+    <div id="results"></div>
 
 </div>
 
 
-<!-- شاشة المحادثة -->
+<!-- ===== الصفحة الترحيبية ===== -->
+<div id="welcome" class="welcome">
+
+    <h2 id="welcomeText">👋 أهلاً</h2>
+    <p>اضغط 🔍 في الأعلى وابحث عن اسم مستخدم لبدء محادثة خاصة</p>
+
+</div>
+
+
+<!-- ===== صفحة المحادثة ===== -->
 <div id="chatPage" class="chatPage">
 
-<div id="chatHeader" class="chatHeader"></div>
+    <div class="chatHeader">
+        <span id="chatUsername">@user</span>
+    </div>
 
-<div id="messages" class="messages"></div>
+    <div id="messages" class="messages"></div>
 
-<div class="sendBox">
-<input id="messageInput" placeholder="اكتب رسالة...">
-<button onclick="sendMessage()">إرسال</button>
+    <div class="sendBox">
+        <input id="messageInput" placeholder="اكتب رسالة...">
+        <button onclick="sendMessage()">إرسال</button>
+    </div>
+
 </div>
 
-</div>
 
 
+<!-- ملفات الجافاسكربت -->
 <script src="app.js"></script>
 <script src="search.js"></script>
+
+
+<script>
+
+/* حماية الصفحة (اذا لم يسجل دخول يرجع للوجن) */
+const user = localStorage.getItem("chatUser");
+const uid  = localStorage.getItem("chatUID");
+
+if(!user || !uid){
+    location.href = "../login.html";
+}
+
+/* اظهار الاسم */
+document.getElementById("welcomeText").innerText = "👋 أهلاً " + user;
+document.getElementById("sideUsername").innerText = "@" + user;
+
+/* القائمة الجانبية */
+function toggleSidebar(){
+    document.getElementById("sidebar").classList.toggle("open");
+}
+
+</script>
 
 </body>
 </html>
