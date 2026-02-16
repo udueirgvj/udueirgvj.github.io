@@ -10,17 +10,32 @@
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
 <script src="firebase.js"></script>
 
 </head>
 
 <body>
 
+<!-- القائمة الجانبية -->
+<div id="sidebar" class="sidebar">
+
+    <div class="sideHeader">
+        <h3 id="sideUser">المستخدم</h3>
+    </div>
+
+    <div class="sideItem" onclick="logoutUser()">
+        🚪 تسجيل الخروج
+    </div>
+
+</div>
+
+<div id="overlay" class="overlay" onclick="closeMenu()"></div>
+
+
 <!-- الشريط العلوي -->
 <div class="topbar">
 
-<div class="menu">☰</div>
+<div class="menu" onclick="openMenu()">☰</div>
 
 <div class="logo">Clipn</div>
 
