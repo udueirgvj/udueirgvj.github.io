@@ -1,10 +1,10 @@
-// فحص تسجيل الدخول
-let currentUser = localStorage.getItem("chatUser");
-if(!currentUser){
-    window.location="../login.html";
-}
+// Firebase Modules
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getDatabase } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-// إعداد Firebase
+
+// 🔴 بيانات مشروعك (وضعتها لك من الصورة)
 const firebaseConfig = {
   apiKey: "AIzaSyDRCtfuYrEdnuKUsWu_79N0",
   authDomain: "tttrt-b8c5a.firebaseapp.com",
@@ -12,20 +12,20 @@ const firebaseConfig = {
   projectId: "tttrt-b8c5a",
   storageBucket: "tttrt-b8c5a.appspot.com",
   messagingSenderId: "975123752593",
-  appId: "1:975123752593:web:e591e930af101968875560"
+  appId: "1:975123752593:web:e591e930af101968875560",
+  measurementId: "G-VJVEB51FEW"
 };
 
-// تحميل مكتبة فايربيس
-var script1=document.createElement("script");
-script1.src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js";
-document.head.appendChild(script1);
-
-var script2=document.createElement("script");
-script2.src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js";
-document.head.appendChild(script2);
 
 // تشغيل فايربيس
-script2.onload=function(){
-    firebase.initializeApp(firebaseConfig);
-    window.db=firebase.database();
-};
+const app = initializeApp(firebaseConfig);
+
+// المصادقة (تسجيل الدخول)
+const auth = getAuth(app);
+
+// قاعدة البيانات
+const db = getDatabase(app);
+
+
+// نصدرهم لباقي الملفات
+export { auth, db };
