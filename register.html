@@ -1,15 +1,11 @@
-<!DOCTYPE html>
-<html lang="ar">
+<!DOCTYPE html><html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>إنشاء حساب</title>
-
-<style>
+<title>إنشاء حساب</title><style>
 body{
-margin:0;
-font-family:tahoma;
 background:#0b1622;
+font-family:Tahoma;
 display:flex;
 justify-content:center;
 align-items:center;
@@ -19,141 +15,108 @@ color:white;
 
 .box{
 width:90%;
-max-width:380px;
-background:#0f1f30;
+max-width:400px;
+background:#122436;
 padding:25px;
-border-radius:18px;
-box-shadow:0 0 20px rgba(0,0,0,.5);
+border-radius:15px;
+box-shadow:0 0 25px rgba(0,0,0,.4);
+}
+
+h2{
 text-align:center;
+margin-bottom:20px;
 }
 
 input{
 width:100%;
 padding:14px;
 margin:10px 0;
+border-radius:10px;
 border:none;
-border-radius:12px;
-background:#1a2d44;
+background:#1b3148;
 color:white;
-font-size:15px;
-outline:none;
+font-size:16px;
+}
+
+input::placeholder{
+color:#9fb3c8;
 }
 
 button{
 width:100%;
 padding:14px;
-margin-top:10px;
+margin-top:15px;
 background:#2ecc71;
 border:none;
-border-radius:14px;
-color:white;
+border-radius:12px;
 font-size:18px;
+color:white;
 cursor:pointer;
 }
 
-a{
-color:#3498db;
+button:hover{
+background:#27ae60;
+}
+
+.link{
+text-align:center;
+margin-top:15px;
+}
+
+.link a{
+color:#4fc3f7;
 text-decoration:none;
 }
+</style></head><body><div class="box">
+<h2>إنشاء حساب</h2><form id="registerForm"><input id="username" placeholder="اسم المستخدم مثال: @ali" required><input id="email" type="email" placeholder="البريد الإلكتروني" required><input id="password" type="password" placeholder="كلمة المرور" required><button type="submit">إنشاء الحساب</button>
 
-#msg{
-margin-top:10px;
-color:#ff7675;
-font-size:14px;
-}
-</style>
+</form><div class="link">
+لديك حساب؟ <a href="login.html">تسجيل الدخول</a>
+</div></div><!-- Firebase --><script type="module">
 
+import { auth, db } from "./app/firebase.js";
+import { createUserWithEmailAndPassword } from 
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { ref, set } from 
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+const form = document.getElementById("registerForm");
 
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyDRCtfuYrEdnuKUsWu_79N0",
-  authDomain: "tttrt-b8c5a.firebaseapp.com",
-  databaseURL: "https://tttrt-b8c5a-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "tttrt-b8c5a",
-  storageBucket: "tttrt-b8c5a.appspot.com",
-  messagingSenderId: "975123752593",
-  appId: "1:975123752593:web:e591e930af101968875560"
-};
+form.addEventListener("submit", async (e)=>{
+e.preventDefault();
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-</script>
+const username = document.getElementById("username").value.trim().toLowerCase();
+const email = document.getElementById("email").value.trim();
+const password = document.getElementById("password").value.trim();
 
-</head>
-<body>
-
-<div class="box">
-<h2>إنشاء حساب</h2>
-
-<input id="username" placeholder="@اسم المستخدم">
-<input id="email" placeholder="البريد الالكتروني">
-<input id="password" type="password" placeholder="كلمة المرور">
-
-<button onclick="register()">إنشاء الحساب</button>
-
-<div id="msg"></div>
-
-<p>لديك حساب؟ <a href="login.html">تسجيل الدخول</a></p>
-</div>
-
-<script>
-
-function register(){
-
-let username = document.getElementById("username").value.trim();
-let email = document.getElementById("email").value.trim();
-let password = document.getElementById("password").value.trim();
-let msg = document.getElementById("msg");
-
-if(username=="" || email=="" || password==""){
-msg.innerText="املأ جميع الحقول";
-return;
-}
-
-/* يجب أن يبدأ بـ @ */
 if(!username.startsWith("@")){
-msg.innerText="اسم المستخدم يجب أن يبدأ بـ @";
+alert("يجب أن يبدأ اسم المستخدم بعلامة @");
 return;
 }
 
-/* تحقق ان الاسم غير مستخدم */
-db.ref("usernames/"+username).once("value",snap=>{
+try{
 
-if(snap.exists()){
-msg.innerText="اسم المستخدم مستخدم مسبقاً";
-return;
-}
+// إنشاء حساب Firebase
+const userCred = await createUserWithEmailAndPassword(auth,email,password);
+const user = userCred.user;
 
-/* إنشاء uid */
-let uid = db.ref("users").push().key;
-
-/* حفظ بيانات المستخدم */
-db.ref("users/"+uid).set({
-username:username,
-email:email,
-password:password,
-created:Date.now()
+// حفظ بيانات المستخدم في قاعدة البيانات
+await set(ref(db,"users/"+user.uid),{
+username: username,
+email: email,
+uid: user.uid
 });
 
-/* ربط اسم المستخدم بالـ uid (هذا هو الإصلاح المهم) */
-db.ref("usernames/"+username).set(uid);
+// فهرس البحث (الأهم)
+await set(ref(db,"usernames/"+username), user.uid);
 
-/* تسجيل دخول مباشر */
-localStorage.setItem("chatUID",uid);
-localStorage.setItem("chatUser",username);
+// الانتقال للتطبيق
+window.location.href = "app/";
 
-/* التحويل للتطبيق */
-location.href="app/index.html";
-
-});
-
+}catch(error){
+alert(error.message);
 }
 
-</script>
-
-</body>
+});
+</script></body>
 </html>
