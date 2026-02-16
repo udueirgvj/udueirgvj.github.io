@@ -1,26 +1,27 @@
-// عند تحميل التطبيق
-window.onload = function(){
+const currentUser = localStorage.getItem("username");
 
-const chatList = document.getElementById("chatList");
+if(!currentUser){
+location.href="../login.html";
+}
 
-chatList.innerHTML = `
-<div style="
-padding:20px;
-text-align:center;
-color:white;
-font-size:18px;
-margin-top:40px;
-">
+document.getElementById("welcomeName").innerText="👋 أهلاً " + currentUser;
+document.getElementById("sideUser").innerText="@" + currentUser;
 
-👋 أهلاً ${currentUser}
+// إخفاء المحادثة بالبداية
+document.getElementById("chatPage").style.display="none";
 
-<br><br>
+function openMenu(){
+document.getElementById("sidebar").style.left="0";
+document.getElementById("overlay").style.display="block";
+}
 
-اضغط 🔍 في الأعلى
-وابحث عن اسم مستخدم
-لبدء محادثة خاصة
+function closeMenu(){
+document.getElementById("sidebar").style.left="-260px";
+document.getElementById("overlay").style.display="none";
+}
 
-</div>
-`;
-
-};
+// تسجيل الخروج
+function logoutUser(){
+localStorage.removeItem("username");
+location.href="../login.html";
+}
