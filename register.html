@@ -4,52 +4,129 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>إنشاء حساب</title>
+
 <style>
-body{background:#0b1622;font-family:tahoma;color:white;text-align:center;margin-top:80px}
-input{width:80%;padding:12px;margin:8px;border-radius:8px;border:none}
-button{padding:12px 20px;background:#28c76f;color:white;border:none;border-radius:8px}
+body{
+    margin:0;
+    padding:0;
+    background: linear-gradient(180deg,#081a2b,#02101c);
+    font-family: Arial;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    color:white;
+}
+
+.box{
+    width:90%;
+    max-width:400px;
+    background:#0d2438;
+    padding:25px;
+    border-radius:18px;
+    box-shadow:0 0 20px rgba(0,0,0,.4);
+    text-align:center;
+}
+
+h2{
+    margin-bottom:20px;
+}
+
+input{
+    width:100%;
+    padding:14px;
+    margin:8px 0;
+    border:none;
+    border-radius:10px;
+    background:#e6e6e6;
+    font-size:15px;
+}
+
+button{
+    width:100%;
+    padding:14px;
+    background:#2ecc71;
+    border:none;
+    border-radius:12px;
+    font-size:18px;
+    color:white;
+    cursor:pointer;
+    margin-top:10px;
+}
+
+button:active{
+    transform:scale(.98);
+}
+
+a{
+    color:#4db8ff;
+    text-decoration:none;
+    display:block;
+    margin-top:15px;
+}
 </style>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<!-- مهم -->
+<script src="firebase.js"></script>
+
 </head>
+
 <body>
 
-<h2>إنشاء حساب</h2>
+<div class="box">
+    <h2>إنشاء حساب</h2>
 
-<input id="username" placeholder="@username">
-<input id="email" placeholder="email">
-<input id="password" type="password" placeholder="password">
+    <input id="username" type="text" placeholder="اسم المستخدم">
+    <input id="email" type="email" placeholder="البريد الإلكتروني">
+    <input id="password" type="password" placeholder="كلمة المرور">
 
-<br>
-<button onclick="register()">إنشاء الحساب</button>
-<br><br>
-<a href="login.html" style="color:#4fc3f7">تسجيل الدخول</a>
+    <button id="registerBtn">إنشاء الحساب</button>
 
-<script type="module">
-import { auth, db } from "./app/firebase.js";
-import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+    <a href="login.html">لديك حساب؟ تسجيل الدخول</a>
+</div>
 
-window.register = async function(){
 
-let username=document.getElementById("username").value.trim();
-let email=document.getElementById("email").value.trim();
-let password=document.getElementById("password").value.trim();
+<script>
+document.getElementById("registerBtn").addEventListener("click", function () {
 
-if(!username.startsWith("@")){alert("اسم المستخدم يجب أن يبدأ بـ @");return;}
+  const username = document.getElementById("username").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
 
-let clean=username.replace("@","");
+  if(username === "" || email === "" || password === ""){
+      alert("املأ جميع الحقول");
+      return;
+  }
 
-const snap=await get(child(ref(db),"usernames/"+clean));
-if(snap.exists()){alert("اسم المستخدم مستخدم");return;}
+  firebase.auth().createUserWithEmailAndPassword(email, password)
+  .then((userCredential)=>{
 
-const userCred=await createUserWithEmailAndPassword(auth,email,password);
-const uid=userCred.user.uid;
+      const user = userCredential.user;
 
-await set(ref(db,"users/"+uid),{username:username,email:email});
-await set(ref(db,"usernames/"+clean),uid);
+      // حفظ بيانات المستخدم
+      firebase.database().ref("users/"+user.uid).set({
+          username: username,
+          email: email,
+          uid: user.uid,
+          createdAt: Date.now()
+      });
 
-alert("تم إنشاء الحساب");
-window.location="login.html";
-}
+      alert("تم إنشاء الحساب بنجاح");
+
+      // دخول مباشر للشات
+      window.location.href = "chat.html";
+
+  })
+  .catch((error)=>{
+      alert(error.message);
+  });
+
+});
 </script>
 
 </body>
