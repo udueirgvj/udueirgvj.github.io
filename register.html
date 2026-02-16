@@ -7,61 +7,62 @@
 
 <style>
 body{
-background:linear-gradient(135deg,#0f172a,#020617);
-font-family:Tahoma;
-color:white;
 margin:0;
+font-family:tahoma;
+background:#0b1622;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+color:white;
 }
 
 .box{
+width:90%;
 max-width:380px;
-margin:40px auto;
-background:#111827;
-padding:20px;
-border-radius:15px;
+background:#0f1f30;
+padding:25px;
+border-radius:18px;
+box-shadow:0 0 20px rgba(0,0,0,.5);
+text-align:center;
 }
-
-h2{text-align:center}
 
 input{
 width:100%;
-padding:12px;
-margin:8px 0;
+padding:14px;
+margin:10px 0;
 border:none;
-border-radius:10px;
-background:#1f2937;
+border-radius:12px;
+background:#1a2d44;
 color:white;
+font-size:15px;
+outline:none;
 }
 
 button{
 width:100%;
-padding:12px;
+padding:14px;
+margin-top:10px;
+background:#2ecc71;
 border:none;
-border-radius:12px;
-background:#22c55e;
+border-radius:14px;
 color:white;
-font-size:16px;
+font-size:18px;
+cursor:pointer;
 }
 
-a{color:#22c55e;text-decoration:none}
+a{
+color:#3498db;
+text-decoration:none;
+}
+
+#msg{
+margin-top:10px;
+color:#ff7675;
+font-size:14px;
+}
 </style>
-</head>
 
-<body>
-
-<div class="box">
-<h2>إنشاء حساب</h2>
-
-<input id="name" placeholder="الاسم الشخصي">
-<input id="username" placeholder="اسم المستخدم (5 احرف على الأقل)">
-<input id="email" type="email" placeholder="البريد الإلكتروني">
-<input id="password" type="password" placeholder="كلمة المرور">
-
-<button onclick="register()">إنشاء الحساب</button>
-<br><br>
-<center><a href="login.html">لديك حساب؟ تسجيل الدخول</a></center>
-<p id="msg"></p>
-</div>
 
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -79,41 +80,79 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
-const db=firebase.database();
+const db = firebase.database();
+</script>
+
+</head>
+<body>
+
+<div class="box">
+<h2>إنشاء حساب</h2>
+
+<input id="username" placeholder="@اسم المستخدم">
+<input id="email" placeholder="البريد الالكتروني">
+<input id="password" type="password" placeholder="كلمة المرور">
+
+<button onclick="register()">إنشاء الحساب</button>
+
+<div id="msg"></div>
+
+<p>لديك حساب؟ <a href="login.html">تسجيل الدخول</a></p>
+</div>
+
+<script>
 
 function register(){
 
-let name=document.getElementById("name").value;
-let username=document.getElementById("username").value.toLowerCase();
-let email=document.getElementById("email").value;
-let password=document.getElementById("password").value;
-let msg=document.getElementById("msg");
+let username = document.getElementById("username").value.trim();
+let email = document.getElementById("email").value.trim();
+let password = document.getElementById("password").value.trim();
+let msg = document.getElementById("msg");
 
-if(username.length<5){
-msg.innerHTML="اسم المستخدم يجب ان يكون 5 احرف على الأقل";
+if(username=="" || email=="" || password==""){
+msg.innerText="املأ جميع الحقول";
 return;
 }
 
-db.ref("users/"+username).once("value",snap=>{
+/* يجب أن يبدأ بـ @ */
+if(!username.startsWith("@")){
+msg.innerText="اسم المستخدم يجب أن يبدأ بـ @";
+return;
+}
+
+/* تحقق ان الاسم غير مستخدم */
+db.ref("usernames/"+username).once("value",snap=>{
+
 if(snap.exists()){
-msg.innerHTML="اسم المستخدم مستخدم بالفعل!";
+msg.innerText="اسم المستخدم مستخدم مسبقاً";
 return;
 }
 
-db.ref("users/"+username).set({
-name:name,
+/* إنشاء uid */
+let uid = db.ref("users").push().key;
+
+/* حفظ بيانات المستخدم */
+db.ref("users/"+uid).set({
 username:username,
 email:email,
-password:password
-}).then(()=>{
-msg.innerHTML="تم إنشاء الحساب ✔";
-setTimeout(()=>{
-window.location="login.html";
-},1500);
+password:password,
+created:Date.now()
 });
 
+/* ربط اسم المستخدم بالـ uid (هذا هو الإصلاح المهم) */
+db.ref("usernames/"+username).set(uid);
+
+/* تسجيل دخول مباشر */
+localStorage.setItem("chatUID",uid);
+localStorage.setItem("chatUser",username);
+
+/* التحويل للتطبيق */
+location.href="app/index.html";
+
 });
+
 }
+
 </script>
 
 </body>
