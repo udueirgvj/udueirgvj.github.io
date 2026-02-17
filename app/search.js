@@ -1,47 +1,54 @@
-const searchBtn = document.getElementById("searchBtn");
+import { db } from "./firebase.js";
+import { ref, get, child } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
+
+const searchBtn = document.getElementById("openSearch");
 const searchBox = document.getElementById("searchBox");
 const searchInput = document.getElementById("searchInput");
 const results = document.getElementById("results");
 
+if(searchBtn){
 searchBtn.onclick = () => {
     searchBox.style.display = "block";
-    searchInput.focus();
 };
-
-function closeSearch(){
-    searchBox.style.display = "none";
-    results.innerHTML = "";
-    searchInput.value = "";
 }
 
-/* البحث عند الكتابة */
-searchInput.oninput = async () => {
+window.searchUser = async function(){
 
-    let username = searchInput.value.trim().toLowerCase();
+    let value = searchInput.value.trim().toLowerCase();
+    results.innerHTML = "";
 
-    if(username.length < 3){
-        results.innerHTML = "";
+    if(value === "") return;
+
+    const snapshot = await get(ref(db,"users"));
+
+    if(!snapshot.exists()){
+        results.innerHTML = "<p>لا يوجد مستخدمين</p>";
         return;
     }
 
-    // إزالة @ لو كتبها المستخدم
-    username = username.replace("@","");
+    snapshot.forEach(childSnap => {
 
-    const snap = await db.ref("usernames/" + username).once("value");
+        let user = childSnap.val();
+        let username = user.username.toLowerCase();
 
-    if(!snap.exists()){
-        results.innerHTML = `<div class="userResult">لا يوجد مستخدم</div>`;
-        return;
-    }
+        if(username.includes(value)){
 
-    const uid = snap.val();
+            const div = document.createElement("div");
+            div.className = "user-result";
+            div.innerHTML = "@" + user.username;
 
-    const userSnap = await db.ref("users/" + uid).once("value");
-    const user = userSnap.val();
+            div.onclick = () => {
 
-    results.innerHTML = `
-        <div class="userResult" onclick="openChat('${uid}','${user.username}')">
-        👤 @${user.username}
-        </div>
-    `;
+                // حفظ الشخص الذي سيتم فتح محادثته
+                localStorage.setItem("chatWith", user.uid);
+                localStorage.setItem("chatWithName", user.username);
+
+                // التحويل الصحيح (هذا هو الإصلاح الحقيقي)
+                window.location.href = "app/index.html";
+            };
+
+            results.appendChild(div);
+        }
+
+    });
 };
