@@ -9,56 +9,50 @@
 body{
 margin:0;
 font-family:tahoma;
-background:#0b1622;
+background:linear-gradient(#0b1c2a,#07131d);
 color:white;
 }
 
 /* الشريط العلوي */
 .topbar{
-position:fixed;
-top:0;
-right:0;
-left:0;
 height:60px;
-background:#0f2234;
+background:#0f2a3d;
 display:flex;
 align-items:center;
 justify-content:space-between;
 padding:0 15px;
-box-shadow:0 2px 8px rgba(0,0,0,.4);
-z-index:10;
+box-shadow:0 2px 10px rgba(0,0,0,.4);
 }
 
-.logo{
+.menu{
+font-size:26px;
+cursor:pointer;
+}
+
+.title{
 font-size:22px;
 font-weight:bold;
 }
 
-.icon{
+.search{
 font-size:22px;
 cursor:pointer;
 }
 
 /* قائمة المحادثات */
 #chatList{
-margin-top:70px;
 padding:10px;
 }
 
-.chatUser{
-background:#16283a;
-padding:14px;
+.user{
+background:#112c40;
+padding:15px;
 border-radius:12px;
 margin-bottom:10px;
 cursor:pointer;
-transition:.2s;
 }
 
-.chatUser:hover{
-background:#1e3b55;
-}
-
-/* نافذة البحث */
+/* صندوق البحث (المشكلة كانت هنا وتم إصلاحها) */
 #searchBox{
 position:fixed;
 top:0;
@@ -70,35 +64,31 @@ display:none;
 align-items:center;
 justify-content:center;
 z-index:20;
+pointer-events:none;
 }
 
 .searchContent{
-background:#0f2234;
+background:#0f2a3d;
 padding:20px;
-border-radius:14px;
-width:90%;
+border-radius:15px;
+width:85%;
 max-width:400px;
 }
 
-input{
+#searchInput{
 width:100%;
 padding:12px;
+border-radius:8px;
 border:none;
-border-radius:10px;
 margin-bottom:10px;
-font-size:16px;
 }
 
-.resultUser{
-background:#1b344d;
+.result{
+background:#163a54;
 padding:12px;
 border-radius:10px;
 margin-top:8px;
 cursor:pointer;
-}
-
-.resultUser:hover{
-background:#295477;
 }
 </style>
 </head>
@@ -107,9 +97,9 @@ background:#295477;
 
 <!-- الشريط العلوي -->
 <div class="topbar">
-<div class="icon">☰</div>
-<div class="logo">Clipn</div>
-<div class="icon" onclick="openSearch()">🔎</div>
+<div class="menu">☰</div>
+<div class="title">Clipn</div>
+<div class="search" onclick="openSearch()">🔎</div>
 </div>
 
 <!-- قائمة المحادثات -->
@@ -118,76 +108,79 @@ background:#295477;
 <!-- نافذة البحث -->
 <div id="searchBox">
   <div class="searchContent">
-    <input id="searchInput" placeholder="اكتب اسم المستخدم...">
+    <input id="searchInput" placeholder="ابحث عن اسم المستخدم">
     <div id="results"></div>
   </div>
 </div>
 
-
 <script type="module">
-import { auth, db } from "./firebase.js";
-import {
-ref, get, child, set
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-const myUID = localStorage.getItem("chatUID");
-if(!myUID) location.href="../login.html";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+/* بيانات فايربيس الخاصة بك */
+const firebaseConfig = {
+apiKey: "AIzaSyDRCtfuYrEdnuKUsWu_79NC6G_xGLznBJc",
+authDomain: "tttrt-b8c5a.firebaseapp.com",
+databaseURL: "https://tttrt-b8c5a-default-rtdb.asia-southeast1.firebasedatabase.app",
+projectId: "tttrt-b8c5a",
+storageBucket: "tttrt-b8c5a.firebasestorage.app",
+messagingSenderId: "975123752593",
+appId: "1:975123752593:web:e591e930af3a3e29568130"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
 /* فتح البحث */
 window.openSearch = ()=>{
-document.getElementById("searchBox").style.display="flex";
+let box=document.getElementById("searchBox");
+box.style.display="flex";
+box.style.pointerEvents="auto";
 };
 
-/* اغلاق عند الضغط خارج */
+/* اغلاق البحث */
 document.getElementById("searchBox").onclick=(e)=>{
-if(e.target.id=="searchBox")
-document.getElementById("searchBox").style.display="none";
+if(e.target.id=="searchBox"){
+let box=document.getElementById("searchBox");
+box.style.display="none";
+box.style.pointerEvents="none";
+}
 };
 
-/* البحث عن مستخدم */
-document.getElementById("searchInput").addEventListener("input", async e=>{
-let value=e.target.value.trim();
+/* البحث عن المستخدم */
+document.getElementById("searchInput").oninput=async function(){
+
+let name=this.value.trim().toLowerCase();
 let results=document.getElementById("results");
 results.innerHTML="";
 
-if(value.length<2) return;
+if(name.length<2) return;
 
-const snap=await get(ref(db,"users"));
-snap.forEach(user=>{
+const snapshot=await get(child(ref(db),"users"));
+
+if(snapshot.exists()){
+snapshot.forEach(user=>{
 let data=user.val();
-if(data.username.toLowerCase().includes(value.toLowerCase())
-&& user.key!==myUID){
+if(data.username.toLowerCase().includes(name)){
 
 let div=document.createElement("div");
-div.className="resultUser";
+div.className="result";
 div.innerText="@"+data.username;
 
-div.onclick=()=>startChat(user.key,data.username);
+div.onclick=()=>{
+localStorage.setItem("chatWith",user.key);
+localStorage.setItem("chatName",data.username);
+window.location="chat.html";
+};
 
 results.appendChild(div);
 }
 });
-});
-
-/* بدء محادثة */
-async function startChat(otherUID,username){
-
-let chatId = myUID < otherUID
-? myUID+"_"+otherUID
-: otherUID+"_"+myUID;
-
-/* انشاء غرفة لو لم تكن موجودة */
-await set(ref(db,"chats/"+chatId+"/members/"+myUID),true);
-await set(ref(db,"chats/"+chatId+"/members/"+otherUID),true);
-
-/* حفظ للاستخدام */
-localStorage.setItem("chatWith",otherUID);
-localStorage.setItem("chatWithName",username);
-localStorage.setItem("chatId",chatId);
-
-/* فتح صفحة الدردشة */
-location.href="chat.html";
 }
+
+};
+
 </script>
 
 </body>
