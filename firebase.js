@@ -1,27 +1,36 @@
-// Firebase
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getDatabase } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+<!-- firebase.js -->// استيراد فايربيس بطريقة صحيحة للمواقع العادية (CDN)
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import { 
+  getAuth, 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
-// بيانات مشروعك (لا تغيّرها)
+import { 
+  getDatabase, 
+  ref, 
+  set, 
+  get, 
+  child 
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+
+// بيانات مشروعك (التي أرسلتها)
 const firebaseConfig = {
-  apiKey: "ضع_apiKey_هنا",
-  authDomain: "ضع_authDomain_هنا",
-  databaseURL: "ضع_databaseURL_هنا",
-  projectId: "ضع_projectId_هنا",
-  storageBucket: "ضع_storageBucket_هنا",
-  messagingSenderId: "ضع_messagingSenderId_هنا",
-  appId: "ضع_appId_هنا"
+  apiKey: "AIzaSyDRCtfuYrEdnuKUsWu_79NC6G_xGLznBJc",
+  authDomain: "tttrt-b8c5a.firebaseapp.com",
+  databaseURL: "https://tttrt-b8c5a-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "tttrt-b8c5a",
+  storageBucket: "tttrt-b8c5a.firebasestorage.app",
+  messagingSenderId: "975123752593",
+  appId: "1:975123752593:web:e591e930af3a3e29568130"
 };
 
 // تشغيل فايربيس
 const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
 
-// تسجيل الدخول
-export const auth = getAuth(app);
-
-// 🔴 هذا أهم سطر في المشروع كله
-setPersistence(auth, browserLocalPersistence);
-
-// قاعدة البيانات
-export const db = getDatabase(app);
+// تصدير للاستخدام ببقية الصفحات
+export { auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, ref, set, get, child };
