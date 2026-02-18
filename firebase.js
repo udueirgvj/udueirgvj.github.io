@@ -1,22 +1,13 @@
-<!-- firebase.js -->// استيراد فايربيس بطريقة صحيحة للمواقع العادية (CDN)
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-import { 
-  getAuth, 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword,
-  onAuthStateChanged,
-  signOut
-} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+// Firebase CDN (يعمل مع GitHub Pages)
 
-import { 
-  getDatabase, 
-  ref, 
-  set, 
-  get, 
-  child 
-} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } 
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getDatabase, ref, set, get, child, onValue, push } 
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-// بيانات مشروعك (التي أرسلتها)
+
+// بيانات مشروعك (التي ارسلتها لي)
 const firebaseConfig = {
   apiKey: "AIzaSyDRCtfuYrEdnuKUsWu_79NC6G_xGLznBJc",
   authDomain: "tttrt-b8c5a.firebaseapp.com",
@@ -27,10 +18,26 @@ const firebaseConfig = {
   appId: "1:975123752593:web:e591e930af3a3e29568130"
 };
 
+
 // تشغيل فايربيس
 const app = initializeApp(firebaseConfig);
+
+// الخدمات
 const auth = getAuth(app);
 const db = getDatabase(app);
 
-// تصدير للاستخدام ببقية الصفحات
-export { auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, ref, set, get, child };
+// التصدير للملفات
+export {
+  auth,
+  db,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut,
+  ref,
+  set,
+  get,
+  child,
+  onValue,
+  push
+};
