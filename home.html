@@ -5,18 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Clipn</title>
 
-<link rel="stylesheet" href="style.css">
+<script type="module" src="abb.js"></script>
 
 <style>
 
 body{
+margin:0;
+font-family:tahoma;
 background:#08252e;
 color:white;
-margin:0;
-font-family:Tahoma;
 }
 
-/* Top bar */
 .topbar{
 position:fixed;
 top:0;
@@ -28,7 +27,6 @@ display:flex;
 align-items:center;
 justify-content:space-between;
 padding:0 15px;
-z-index:5;
 }
 
 .appname{
@@ -36,59 +34,8 @@ font-size:20px;
 font-weight:bold;
 }
 
-.icon{
-font-size:22px;
-cursor:pointer;
-}
-
-/* Sidebar */
-.sidebar{
-position:fixed;
-top:0;
-right:-260px;
-width:260px;
-height:100%;
-background:#0c2f3a;
-transition:0.3s;
-padding:20px;
-z-index:10;
-}
-
-.sidebar.open{
-right:0;
-}
-
-.menu-item{
-padding:14px;
-border-bottom:1px solid #1e5666;
-cursor:pointer;
-}
-
-/* Search */
-.searchbox{
-position:fixed;
-top:60px;
-left:0;
-right:0;
-background:#0e3a47;
-padding:10px;
-display:none;
-}
-
-.searchbox input{
-width:70%;
-padding:8px;
-border:none;
-border-radius:8px;
-}
-
-.searchbox button{
-padding:8px;
-}
-
-/* Chat list */
 .chat-list{
-margin-top:120px;
+margin-top:70px;
 padding:10px;
 }
 
@@ -100,13 +47,12 @@ margin-bottom:10px;
 cursor:pointer;
 }
 
-/* Chat window */
 .chat-window{
 position:fixed;
+top:60px;
 bottom:0;
 left:0;
 right:0;
-top:60px;
 background:#08252e;
 display:none;
 flex-direction:column;
@@ -135,28 +81,27 @@ background:#0c2f3a;
 
 .send-box input{
 flex:1;
-padding:10px;
+padding:12px;
+border-radius:10px;
+border:none;
+}
+
+button{
+padding:12px;
+margin-right:5px;
 border:none;
 border-radius:10px;
+background:#2ecc71;
+color:white;
 }
 
-.send-box button{
-margin-right:8px;
-}
-
-/* plus button */
-.plus{
+.logout{
 position:fixed;
 bottom:20px;
 left:20px;
-width:60px;
-height:60px;
-background:#2ecc71;
-border-radius:50%;
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:30px;
+background:red;
+padding:12px 18px;
+border-radius:12px;
 cursor:pointer;
 }
 
@@ -165,51 +110,52 @@ cursor:pointer;
 
 <body>
 
-<!-- Top -->
 <div class="topbar">
-<div class="icon" onclick="toggleMenu()">☰</div>
 <div class="appname">Clipn</div>
-<div class="icon" onclick="toggleSearch()">🔍</div>
 </div>
 
-<!-- Search -->
-<div class="searchbox" id="searchBox">
-<input id="searchInput" placeholder="اكتب اسم المستخدم">
-<button onclick="searchUser(document.getElementById('searchInput').value)">بحث</button>
+<div class="chat-list" id="chatList">
+
+<div class="user" onclick="openChat('الدردشة العامة')">
+الدردشة العامة
 </div>
 
-<!-- Sidebar -->
-<div class="sidebar" id="sidebar">
-<div class="menu-item" onclick="logoutUser()">🚪 تسجيل خروج</div>
 </div>
 
-<!-- Users -->
-<div class="chat-list" id="chatList"></div>
-
-<!-- Chat -->
 <div class="chat-window" id="chatWindow">
+
 <div class="messages" id="messages"></div>
 
 <div class="send-box">
 <input id="msgInput" placeholder="اكتب رسالة">
 <button onclick="sendMsg()">إرسال</button>
 </div>
+
 </div>
 
-<div class="plus">＋</div>
-
-<!-- Firebase Logic -->
-<script type="module" src="abb.js"></script>
+<div class="logout" onclick="logoutUser()">تسجيل خروج</div>
 
 <script>
-function toggleMenu(){
-document.getElementById("sidebar").classList.toggle("open");
+
+let opened=false;
+
+function openChat(name){
+document.getElementById("chatWindow").style.display="flex";
 }
 
-function toggleSearch(){
-let s=document.getElementById("searchBox");
-s.style.display=s.style.display=="block"?"none":"block";
+function sendMsg(){
+
+let txt=document.getElementById("msgInput").value;
+if(!txt) return;
+
+let div=document.createElement("div");
+div.className="msg";
+div.innerText=txt;
+
+document.getElementById("messages").appendChild(div);
+document.getElementById("msgInput").value="";
 }
+
 </script>
 
 </body>
