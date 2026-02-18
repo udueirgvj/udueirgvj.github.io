@@ -2,38 +2,214 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Clipn</title>
-<script type="module" src="abb.js"></script>
-</head>
 
-<body style="background:#0b1f2a;color:white;text-align:center;margin-top:100px;">
+<link rel="stylesheet" href="style.css">
 
-<h1>🎉 مرحباً بك في التطبيق</h1>
+<style>
 
-<button onclick="logout()" style="padding:12px 20px;background:red;color:white;border:none;border-radius:10px;">
-تسجيل الخروج
-</button>
-
-<script type="module">
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyDRCtfuYrEdnuKUsWu_79NC6G_xGLznBJc",
-  authDomain: "tttrt-b8c5a.firebaseapp.com",
-  projectId: "tttrt-b8c5a"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-
-window.logout=function(){
-signOut(auth).then(()=>{
-window.location.href="index.html";
-});
+body{
+background:#08252e;
+color:white;
+margin:0;
+font-family:Tahoma;
 }
 
+/* Top bar */
+.topbar{
+position:fixed;
+top:0;
+right:0;
+left:0;
+height:60px;
+background:#0e3a47;
+display:flex;
+align-items:center;
+justify-content:space-between;
+padding:0 15px;
+z-index:5;
+}
+
+.appname{
+font-size:20px;
+font-weight:bold;
+}
+
+.icon{
+font-size:22px;
+cursor:pointer;
+}
+
+/* Sidebar */
+.sidebar{
+position:fixed;
+top:0;
+right:-260px;
+width:260px;
+height:100%;
+background:#0c2f3a;
+transition:0.3s;
+padding:20px;
+z-index:10;
+}
+
+.sidebar.open{
+right:0;
+}
+
+.menu-item{
+padding:14px;
+border-bottom:1px solid #1e5666;
+cursor:pointer;
+}
+
+/* Search */
+.searchbox{
+position:fixed;
+top:60px;
+left:0;
+right:0;
+background:#0e3a47;
+padding:10px;
+display:none;
+}
+
+.searchbox input{
+width:70%;
+padding:8px;
+border:none;
+border-radius:8px;
+}
+
+.searchbox button{
+padding:8px;
+}
+
+/* Chat list */
+.chat-list{
+margin-top:120px;
+padding:10px;
+}
+
+.user{
+background:#124757;
+padding:15px;
+border-radius:12px;
+margin-bottom:10px;
+cursor:pointer;
+}
+
+/* Chat window */
+.chat-window{
+position:fixed;
+bottom:0;
+left:0;
+right:0;
+top:60px;
+background:#08252e;
+display:none;
+flex-direction:column;
+}
+
+.messages{
+flex:1;
+overflow-y:auto;
+padding:15px;
+}
+
+.msg{
+background:#155a6e;
+padding:10px;
+margin:6px 0;
+border-radius:10px;
+width:fit-content;
+max-width:70%;
+}
+
+.send-box{
+display:flex;
+padding:10px;
+background:#0c2f3a;
+}
+
+.send-box input{
+flex:1;
+padding:10px;
+border:none;
+border-radius:10px;
+}
+
+.send-box button{
+margin-right:8px;
+}
+
+/* plus button */
+.plus{
+position:fixed;
+bottom:20px;
+left:20px;
+width:60px;
+height:60px;
+background:#2ecc71;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:30px;
+cursor:pointer;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- Top -->
+<div class="topbar">
+<div class="icon" onclick="toggleMenu()">☰</div>
+<div class="appname">Clipn</div>
+<div class="icon" onclick="toggleSearch()">🔍</div>
+</div>
+
+<!-- Search -->
+<div class="searchbox" id="searchBox">
+<input id="searchInput" placeholder="اكتب اسم المستخدم">
+<button onclick="searchUser(document.getElementById('searchInput').value)">بحث</button>
+</div>
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+<div class="menu-item" onclick="logoutUser()">🚪 تسجيل خروج</div>
+</div>
+
+<!-- Users -->
+<div class="chat-list" id="chatList"></div>
+
+<!-- Chat -->
+<div class="chat-window" id="chatWindow">
+<div class="messages" id="messages"></div>
+
+<div class="send-box">
+<input id="msgInput" placeholder="اكتب رسالة">
+<button onclick="sendMsg()">إرسال</button>
+</div>
+</div>
+
+<div class="plus">＋</div>
+
+<!-- Firebase Logic -->
+<script type="module" src="abb.js"></script>
+
+<script>
+function toggleMenu(){
+document.getElementById("sidebar").classList.toggle("open");
+}
+
+function toggleSearch(){
+let s=document.getElementById("searchBox");
+s.style.display=s.style.display=="block"?"none":"block";
+}
 </script>
 
 </body>
